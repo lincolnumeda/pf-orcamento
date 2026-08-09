@@ -1,0 +1,59 @@
+export interface DadosContatoValor {
+  escolaNome: string;
+  responsavelNome: string;
+  responsavelEmail: string;
+  responsavelWhatsapp: string;
+}
+
+interface Props {
+  valor: DadosContatoValor;
+  cep: string;
+  cidadeUf: string | null;
+  onChange: (valor: DadosContatoValor) => void;
+  onCepChange: (cep: string) => void;
+}
+
+export function DadosContato({ valor, cep, cidadeUf, onChange, onCepChange }: Props) {
+  const set = (campo: keyof DadosContatoValor) => (e: React.ChangeEvent<HTMLInputElement>) =>
+    onChange({ ...valor, [campo]: e.target.value });
+
+  return (
+    <fieldset className="dados-contato">
+      <legend>Dados da escola</legend>
+
+      <label>
+        Nome da escola
+        <input type="text" required value={valor.escolaNome} onChange={set('escolaNome')} />
+      </label>
+
+      <label>
+        Nome do responsável
+        <input type="text" required value={valor.responsavelNome} onChange={set('responsavelNome')} />
+      </label>
+
+      <label>
+        Email
+        <input type="email" required value={valor.responsavelEmail} onChange={set('responsavelEmail')} />
+      </label>
+
+      <label>
+        WhatsApp
+        <input type="tel" required value={valor.responsavelWhatsapp} onChange={set('responsavelWhatsapp')} />
+      </label>
+
+      <label>
+        CEP de entrega
+        <input
+          type="text"
+          required
+          inputMode="numeric"
+          maxLength={9}
+          value={cep}
+          onChange={(e) => onCepChange(e.target.value)}
+          placeholder="00000-000"
+        />
+        {cidadeUf && <span className="dados-contato__cidade">{cidadeUf}</span>}
+      </label>
+    </fieldset>
+  );
+}
