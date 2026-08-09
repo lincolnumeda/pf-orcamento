@@ -1,0 +1,13 @@
+# SPA fallback: qualquer rota que não seja um arquivo/pasta real (ex:
+# /central, /aprovar/abc-123) cai no index.html, que o React Router então
+# resolve no cliente. Sem isso, acessar essas URLs direto (sem passar pela
+# navegação interna) dá 404 no Apache.
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+
+  RewriteRule ^index\.html$ - [L]
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule . /index.html [L]
+</IfModule>
