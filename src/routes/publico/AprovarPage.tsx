@@ -4,6 +4,7 @@ import type { Orcamento } from '../../types';
 import { consultarOrcamentoPublico, confirmarAprovacao } from '../../lib/aprovacao';
 import { totalComAjuste } from '../../lib/orcamentos';
 import { formatarReais } from '../../lib/formato';
+import { capaProduto } from '../../lib/capas';
 
 export default function AprovarPage() {
   const { id } = useParams<{ id: string }>();
@@ -48,24 +49,32 @@ export default function AprovarPage() {
           {orcamento.escola_nome} — {orcamento.responsavel_nome}
         </p>
 
-        <table className="aprovar-page__itens">
-          <thead>
-            <tr>
-              <th>Item</th>
-              <th>Qtd</th>
-              <th>Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            {orcamento.itens.map((item, i) => (
-              <tr key={i}>
-                <td>{item.nome}</td>
-                <td>{item.quantidade}</td>
-                <td>{formatarReais(item.preco_unitario * item.quantidade)}</td>
+        <div className="tabela-scroll">
+          <table className="aprovar-page__itens">
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th>Qtd</th>
+                <th>Total</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {orcamento.itens.map((item, i) => {
+                const capa = capaProduto(item.nome.replace("Teacher's Guide — ", ''), item.teachers_guide);
+                return (
+                  <tr key={i}>
+                    <td className="orcamento-detalhe__item-nome">
+                      {capa && <img src={capa} alt="" loading="lazy" />}
+                      {item.nome}
+                    </td>
+                    <td>{item.quantidade}</td>
+                    <td>{formatarReais(item.preco_unitario * item.quantidade)}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
 
         {orcamento.regras_aplicadas.length > 0 && (
           <ul className="aprovar-page__beneficios">
@@ -107,11 +116,11 @@ export default function AprovarPage() {
         </p>
 
         {orcamento.link_pagamento ? (
-          <a className="aprovar-page__confirmar" href={orcamento.link_pagamento}>
+          <a className="btn btn-primary aprovar-page__confirmar" href={orcamento.link_pagamento}>
             Ir para pagamento
           </a>
         ) : (
-          <button className="aprovar-page__confirmar" onClick={handleConfirmar} disabled={confirmando}>
+          <button className="btn btn-primary aprovar-page__confirmar" onClick={handleConfirmar} disabled={confirmando}>
             {confirmando ? 'Confirmando...' : 'Confirmar e ir para pagamento'}
           </button>
         )}

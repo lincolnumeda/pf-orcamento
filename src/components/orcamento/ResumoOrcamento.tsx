@@ -22,41 +22,48 @@ export function ResumoOrcamento({
   prazoProducao,
 }: Props) {
   return (
-    <aside className="resumo">
-      <h2>Resumo</h2>
+    <aside className="resumo card">
+      <h3>Resumo do orçamento</h3>
 
-      <dl className="resumo__linhas">
-        <div>
-          <dt>Subtotal</dt>
-          <dd>{formatarReais(resultado.subtotal)}</dd>
+      <div className="resumo__linhas">
+        <div className="sum-line">
+          <span>Subtotal</span>
+          <span className="tabnums">{formatarReais(resultado.subtotal)}</span>
         </div>
-        <div>
-          <dt>Frete</dt>
-          <dd>
+        <div className="sum-line">
+          <span>Frete</span>
+          <span className="tabnums">
             {!cepPreenchido && '—'}
             {cepPreenchido && freteCarregando && 'calculando...'}
             {cepPreenchido && !freteCarregando && formatarReais(resultado.freteFinal)}
-          </dd>
+          </span>
         </div>
-        <div className="resumo__total">
-          <dt>Total</dt>
-          <dd>{formatarReais(resultado.totalFinal)}</dd>
-        </div>
-      </dl>
+      </div>
 
       {freteErro && <p className="resumo__erro">Não foi possível calcular o frete: {freteErro}</p>}
 
       {resultado.regrasAplicadas.length > 0 && (
-        <ul className="resumo__beneficios">
+        <div className="resumo__beneficios">
           {resultado.regrasAplicadas.map((r) => (
-            <li key={r.regra_id} className="beneficio-banner">
+            <div key={r.regra_id} className="benefit-ticket">
               🎉 {r.mensagem_cliente}
               {r.tipo_beneficio === 'item_gratis' && r.item_beneficio
                 ? ` — ${r.beneficio_valor}x ${r.item_beneficio} grátis (economia de ${formatarReais(r.valor_economizado)})`
                 : ` — economia de ${formatarReais(r.valor_economizado)}`}
-            </li>
+            </div>
           ))}
-        </ul>
+        </div>
+      )}
+
+      {resultado.nearMiss.length > 0 && (
+        <div className="resumo__near-miss">
+          {resultado.nearMiss.map((hint) => (
+            <div key={hint.regraId} className="hint-box">
+              Falta {hint.unidade === 'livros' ? `${hint.falta} livro(s)` : formatarReais(hint.falta)} para desbloquear:{' '}
+              {hint.nome}
+            </div>
+          ))}
+        </div>
       )}
 
       {(prazoProducao || freteDias !== null) && (
@@ -74,16 +81,10 @@ export function ResumoOrcamento({
         </div>
       )}
 
-      {resultado.nearMiss.length > 0 && (
-        <ul className="resumo__near-miss">
-          {resultado.nearMiss.map((hint) => (
-            <li key={hint.regraId}>
-              Falta {hint.unidade === 'livros' ? `${hint.falta} livro(s)` : formatarReais(hint.falta)} para desbloquear:{' '}
-              {hint.nome}
-            </li>
-          ))}
-        </ul>
-      )}
+      <div className="sum-total">
+        <span>Total</span>
+        <span className="tabnums">{formatarReais(resultado.totalFinal)}</span>
+      </div>
     </aside>
   );
 }

@@ -33,8 +33,8 @@ export default function KanbanPage() {
     setSelecionado(atualizado);
   }
 
-  if (carregando) return <main>Carregando orçamentos...</main>;
-  if (erro) return <main>Erro ao carregar orçamentos: {erro}</main>;
+  if (carregando) return <main className="kanban-page">Carregando orçamentos...</main>;
+  if (erro) return <main className="kanban-page">Erro ao carregar orçamentos: {erro}</main>;
 
   return (
     <main className="kanban-page">
@@ -42,6 +42,7 @@ export default function KanbanPage() {
         <h1>Central de orçamentos</h1>
         <input
           type="search"
+          className="kanban-page__busca"
           placeholder="Buscar por escola ou responsável..."
           value={busca}
           onChange={(e) => setBusca(e.target.value)}

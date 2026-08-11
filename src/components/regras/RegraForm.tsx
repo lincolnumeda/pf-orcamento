@@ -43,12 +43,12 @@ export function RegraForm({ valorInicial, itensBeneficioDisponiveis, salvando, e
 
   return (
     <form className="regra-form" onSubmit={handleSubmit}>
-      <label>
+      <label className="campo">
         Nome (interno, só a equipe vê)
         <input type="text" required value={valor.nome} onChange={(e) => set('nome', e.target.value)} />
       </label>
 
-      <label>
+      <label className="campo">
         Mensagem pro cliente (email/tela — deixe em branco pra usar o nome acima)
         <input
           type="text"
@@ -58,133 +58,145 @@ export function RegraForm({ valorInicial, itensBeneficioDisponiveis, salvando, e
         />
       </label>
 
-      <div className="regra-form__linha">
-        <label>
-          Tipo de gatilho
-          <select value={valor.tipo_gatilho} onChange={(e) => set('tipo_gatilho', e.target.value as TipoGatilho)}>
-            {TIPOS_GATILHO.map((t) => (
-              <option key={t.valor} value={t.valor}>
-                {t.rotulo}
+      <fieldset>
+        <legend>Gatilho</legend>
+        <div className="row3">
+          <label className="campo">
+            Tipo de gatilho
+            <select value={valor.tipo_gatilho} onChange={(e) => set('tipo_gatilho', e.target.value as TipoGatilho)}>
+              {TIPOS_GATILHO.map((t) => (
+                <option key={t.valor} value={t.valor}>
+                  {t.rotulo}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="campo">
+            Modo do gatilho
+            <select value={valor.gatilho_modo} onChange={(e) => set('gatilho_modo', e.target.value as GatilhoModo)}>
+              {MODOS_GATILHO.map((m) => (
+                <option key={m.valor} value={m.valor}>
+                  {m.rotulo}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="campo">
+            Valor do gatilho
+            <input
+              type="number"
+              required
+              min={0}
+              value={valor.gatilho_valor}
+              onChange={(e) => set('gatilho_valor', Number(e.target.value))}
+            />
+          </label>
+        </div>
+
+        <div className="row2">
+          <label className="campo">
+            Frete mín. (R$, opcional)
+            <input
+              type="number"
+              min={0}
+              value={valor.frete_min ?? ''}
+              onChange={(e) => set('frete_min', numeroOuNull(e.target.value))}
+            />
+          </label>
+          <label className="campo">
+            Frete máx. (R$, opcional)
+            <input
+              type="number"
+              min={0}
+              value={valor.frete_max ?? ''}
+              onChange={(e) => set('frete_max', numeroOuNull(e.target.value))}
+            />
+          </label>
+        </div>
+        <p className="regra-form__ajuda">
+          Faixa de frete é uma condição extra opcional (ex: "só isenta frete se o frete calculado for baixo") — deixe
+          em branco se não se aplica.
+        </p>
+      </fieldset>
+
+      <fieldset>
+        <legend>Benefício</legend>
+        <div className="row2">
+          <label className="campo">
+            Tipo de benefício
+            <select
+              value={valor.tipo_beneficio}
+              onChange={(e) => set('tipo_beneficio', e.target.value as TipoBeneficio)}
+            >
+              {TIPOS_BENEFICIO.map((t) => (
+                <option key={t.valor} value={t.valor}>
+                  {t.rotulo}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="campo">
+            {valor.tipo_beneficio === 'item_gratis' ? 'Quantidade grátis' : 'Valor do benefício (%)'}
+            <input
+              type="number"
+              required
+              min={0}
+              value={valor.beneficio_valor}
+              onChange={(e) => set('beneficio_valor', Number(e.target.value))}
+            />
+          </label>
+        </div>
+
+        {valor.tipo_beneficio === 'item_gratis' && (
+          <label className="campo">
+            Item do benefício
+            <select
+              required
+              value={valor.item_beneficio ?? ''}
+              onChange={(e) => set('item_beneficio', e.target.value || null)}
+            >
+              <option value="" disabled>
+                Selecione...
               </option>
-            ))}
-          </select>
-        </label>
+              {itensBeneficioDisponiveis.map((item) => (
+                <option key={item} value={item}>
+                  {item}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+      </fieldset>
 
-        <label>
-          Modo do gatilho
-          <select value={valor.gatilho_modo} onChange={(e) => set('gatilho_modo', e.target.value as GatilhoModo)}>
-            {MODOS_GATILHO.map((m) => (
-              <option key={m.valor} value={m.valor}>
-                {m.rotulo}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <label>
-          Valor do gatilho
-          <input
-            type="number"
-            required
-            min={0}
-            value={valor.gatilho_valor}
-            onChange={(e) => set('gatilho_valor', Number(e.target.value))}
-          />
-        </label>
-      </div>
-
-      <div className="regra-form__linha">
-        <label>
-          Frete mín. (R$, opcional)
-          <input
-            type="number"
-            min={0}
-            value={valor.frete_min ?? ''}
-            onChange={(e) => set('frete_min', numeroOuNull(e.target.value))}
-          />
-        </label>
-        <label>
-          Frete máx. (R$, opcional)
-          <input
-            type="number"
-            min={0}
-            value={valor.frete_max ?? ''}
-            onChange={(e) => set('frete_max', numeroOuNull(e.target.value))}
-          />
-        </label>
-      </div>
-      <p className="regra-form__ajuda">
-        Faixa de frete é uma condição extra opcional (ex: "só isenta frete se o frete calculado for baixo") — deixe
-        em branco se não se aplica.
-      </p>
-
-      <div className="regra-form__linha">
-        <label>
-          Tipo de benefício
-          <select value={valor.tipo_beneficio} onChange={(e) => set('tipo_beneficio', e.target.value as TipoBeneficio)}>
-            {TIPOS_BENEFICIO.map((t) => (
-              <option key={t.valor} value={t.valor}>
-                {t.rotulo}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <label>
-          {valor.tipo_beneficio === 'item_gratis' ? 'Quantidade grátis' : 'Valor do benefício (%)'}
-          <input
-            type="number"
-            required
-            min={0}
-            value={valor.beneficio_valor}
-            onChange={(e) => set('beneficio_valor', Number(e.target.value))}
-          />
-        </label>
-      </div>
-
-      {valor.tipo_beneficio === 'item_gratis' && (
-        <label>
-          Item do benefício
-          <select
-            required
-            value={valor.item_beneficio ?? ''}
-            onChange={(e) => set('item_beneficio', e.target.value || null)}
-          >
-            <option value="" disabled>
-              Selecione...
-            </option>
-            {itensBeneficioDisponiveis.map((item) => (
-              <option key={item} value={item}>
-                {item}
-              </option>
-            ))}
-          </select>
-        </label>
-      )}
-
-      <div className="regra-form__linha">
-        <label>
-          Grupo exclusivo (opcional)
-          <input
-            type="text"
-            value={valor.grupo_exclusivo ?? ''}
-            onChange={(e) => set('grupo_exclusivo', e.target.value || null)}
-            placeholder="Ex: frete"
-          />
-        </label>
-        <label>
-          Prioridade (menor = mais prioritária)
-          <input
-            type="number"
-            required
-            value={valor.prioridade}
-            onChange={(e) => set('prioridade', Number(e.target.value))}
-          />
-        </label>
-      </div>
-      <p className="regra-form__ajuda">
-        Regras do mesmo grupo exclusivo competem entre si — só a de maior prioridade que disparar é aplicada.
-      </p>
+      <fieldset>
+        <legend>Prioridade e exclusividade</legend>
+        <div className="row2">
+          <label className="campo">
+            Grupo exclusivo (opcional)
+            <input
+              type="text"
+              value={valor.grupo_exclusivo ?? ''}
+              onChange={(e) => set('grupo_exclusivo', e.target.value || null)}
+              placeholder="Ex: frete"
+            />
+          </label>
+          <label className="campo">
+            Prioridade (menor = mais prioritária)
+            <input
+              type="number"
+              required
+              value={valor.prioridade}
+              onChange={(e) => set('prioridade', Number(e.target.value))}
+            />
+          </label>
+        </div>
+        <p className="regra-form__ajuda">
+          Regras do mesmo grupo exclusivo competem entre si — só a de maior prioridade que disparar é aplicada.
+        </p>
+      </fieldset>
 
       <label className="regra-form__ativa">
         <input type="checkbox" checked={valor.ativa} onChange={(e) => set('ativa', e.target.checked)} />
@@ -193,11 +205,11 @@ export function RegraForm({ valorInicial, itensBeneficioDisponiveis, salvando, e
 
       {erro && <p className="resumo__erro">{erro}</p>}
 
-      <div className="regra-form__acoes">
-        <button type="button" onClick={onCancelar} disabled={salvando}>
+      <div className="modal-actions">
+        <button type="button" className="btn btn-ghost" onClick={onCancelar} disabled={salvando}>
           Cancelar
         </button>
-        <button type="submit" disabled={salvando}>
+        <button type="submit" className="btn btn-primary" disabled={salvando}>
           {salvando ? 'Salvando...' : 'Salvar'}
         </button>
       </div>

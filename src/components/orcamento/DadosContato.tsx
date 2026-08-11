@@ -18,42 +18,45 @@ export function DadosContato({ valor, cep, cidadeUf, onChange, onCepChange }: Pr
     onChange({ ...valor, [campo]: e.target.value });
 
   return (
-    <fieldset className="dados-contato">
-      <legend>Dados da escola</legend>
+    <div className="card">
+      <h3>Escola / contato</h3>
+      <div className="campo-grid">
+        <label className="campo">
+          Nome da escola
+          <input type="text" required value={valor.escolaNome} onChange={set('escolaNome')} />
+        </label>
 
-      <label>
-        Nome da escola
-        <input type="text" required value={valor.escolaNome} onChange={set('escolaNome')} />
-      </label>
+        <label className="campo">
+          Nome do responsável
+          <input type="text" required value={valor.responsavelNome} onChange={set('responsavelNome')} />
+        </label>
 
-      <label>
-        Nome do responsável
-        <input type="text" required value={valor.responsavelNome} onChange={set('responsavelNome')} />
-      </label>
+        <label className="campo">
+          Email
+          <input type="email" required value={valor.responsavelEmail} onChange={set('responsavelEmail')} />
+        </label>
 
-      <label>
-        Email
-        <input type="email" required value={valor.responsavelEmail} onChange={set('responsavelEmail')} />
-      </label>
+        <label className="campo">
+          WhatsApp
+          <input type="tel" required value={valor.responsavelWhatsapp} onChange={set('responsavelWhatsapp')} />
+        </label>
+      </div>
 
-      <label>
-        WhatsApp
-        <input type="tel" required value={valor.responsavelWhatsapp} onChange={set('responsavelWhatsapp')} />
-      </label>
-
-      <label>
+      <label className="campo">
         CEP de entrega
-        <input
-          type="text"
-          required
-          inputMode="numeric"
-          maxLength={9}
-          value={cep}
-          onChange={(e) => onCepChange(e.target.value)}
-          placeholder="00000-000"
-        />
-        {cidadeUf && <span className="dados-contato__cidade">{cidadeUf}</span>}
+        <div className="dados-contato__cep-linha">
+          <input
+            type="text"
+            required
+            inputMode="numeric"
+            maxLength={9}
+            value={cep}
+            onChange={(e) => onCepChange(e.target.value)}
+            placeholder="00000-000"
+          />
+          {cidadeUf && <span className="dados-contato__cidade">{cidadeUf}</span>}
+        </div>
       </label>
-    </fieldset>
+    </div>
   );
 }

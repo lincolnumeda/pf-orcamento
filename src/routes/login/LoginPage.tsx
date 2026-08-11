@@ -20,13 +20,15 @@ export default function LoginPage() {
             <p>
               A conta <strong>{auth.email}</strong> não tem acesso liberado a este módulo.
             </p>
-            <button onClick={() => sair()}>Sair</button>
+            <button className="btn btn-ghost" onClick={() => sair()}>
+              Sair
+            </button>
           </div>
         )}
 
         {(auth.status === 'deslogado' || auth.status === 'carregando') && (
           <button
-            className="login-page__google"
+            className="btn btn-primary"
             onClick={() => entrarComGoogle()}
             disabled={auth.status === 'carregando'}
           >

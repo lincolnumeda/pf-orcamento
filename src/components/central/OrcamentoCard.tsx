@@ -7,7 +7,11 @@ export function OrcamentoCard({ orcamento, onClick }: { orcamento: Orcamento; on
   const ajustado = orcamento.ajuste_manual !== 0;
 
   return (
-    <button type="button" className="orcamento-card" onClick={onClick}>
+    <button
+      type="button"
+      className={`orcamento-card orcamento-card--${orcamento.status}`}
+      onClick={onClick}
+    >
       <span className="orcamento-card__escola">{orcamento.escola_nome}</span>
       <span className="orcamento-card__responsavel">{orcamento.responsavel_nome}</span>
       <span className="orcamento-card__total">

@@ -11,28 +11,28 @@ interface Props {
 
 export function RegraLinha({ regra, onAlternarAtiva, onEditar, onExcluir }: Props) {
   return (
-    <div className="regra-linha">
-      <Disjuntor ativa={regra.ativa} onChange={onAlternarAtiva} />
-
-      <div className="regra-linha__info">
-        <span className="regra-linha__nome">{regra.nome}</span>
-        <span className="regra-linha__descricao">{descreverRegra(regra)}</span>
-        {(regra.grupo_exclusivo || regra.mensagem_cliente) && (
-          <span className="regra-linha__meta">
-            {regra.grupo_exclusivo && `Grupo: ${regra.grupo_exclusivo} (prioridade ${regra.prioridade})`}
-            {regra.grupo_exclusivo && regra.mensagem_cliente && ' — '}
-            {regra.mensagem_cliente && `Mensagem: "${regra.mensagem_cliente}"`}
-          </span>
-        )}
-      </div>
+    <div className={`regra-linha ${regra.ativa ? '' : 'regra-linha--inativa'}`}>
+      <span className="regra-linha__nome">{regra.nome}</span>
 
       <div className="regra-linha__acoes">
-        <button type="button" onClick={onEditar}>
-          Editar
+        <Disjuntor ativa={regra.ativa} onChange={onAlternarAtiva} />
+        <button type="button" className="regra-linha__link" onClick={onEditar}>
+          editar
         </button>
-        <button type="button" className="regra-linha__excluir" onClick={onExcluir}>
-          Excluir
+        <button type="button" className="regra-linha__link regra-linha__excluir" onClick={onExcluir}>
+          excluir
         </button>
+      </div>
+
+      <div className="regra-linha__meta">
+        {descreverRegra(regra)}
+        {(regra.grupo_exclusivo || regra.mensagem_cliente) && (
+          <div className="regra-linha__tags">
+            {regra.grupo_exclusivo && <span className="pill pill--grupo">grupo: {regra.grupo_exclusivo}</span>}
+            <span className="pill">prioridade {regra.prioridade}</span>
+            {regra.mensagem_cliente && <span className="pill">"{regra.mensagem_cliente}"</span>}
+          </div>
+        )}
       </div>
     </div>
   );

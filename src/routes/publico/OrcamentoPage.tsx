@@ -103,24 +103,34 @@ export default function OrcamentoPage() {
     setEnviado(true);
   }
 
-  if (carregando) return <main>Carregando catálogo...</main>;
-  if (erro) return <main>Erro ao carregar catálogo: {erro}</main>;
+  if (carregando) return <main className="orcamento-page">Carregando catálogo...</main>;
+  if (erro) return <main className="orcamento-page">Erro ao carregar catálogo: {erro}</main>;
 
   if (enviado) {
     return (
-      <main className="orcamento-enviado">
-        <h1>Orçamento recebido!</h1>
-        <p>Em breve você recebe um email com o resumo. Qualquer dúvida, fala com a gente no WhatsApp.</p>
+      <main className="orcamento-page orcamento-page--centralizada">
+        <div className="card orcamento-enviado">
+          <h1>Orçamento recebido!</h1>
+          <p>Em breve você recebe um email com o resumo. Qualquer dúvida, fala com a gente no WhatsApp.</p>
+        </div>
       </main>
     );
   }
 
+  const produtosInfantil = produtosSelecionaveis.filter((p) => p.categoria === 'infantil');
+  const produtosTots = produtosSelecionaveis.filter((p) => p.categoria === 'tots');
+
   return (
     <main className="orcamento-page">
-      <h1>Pedido de orçamento</h1>
+      <div className="pagehead">
+        <h1>
+          Solicitar orçamento <span className="badge-live">cálculo em tempo real</span>
+        </h1>
+        <p>Escolha os livros e a quantidade — o valor e os benefícios são calculados na hora.</p>
+      </div>
 
       <form onSubmit={handleSubmit} className="orcamento-form">
-        <div className="orcamento-form__grid">
+        <div className="client-grid">
           <div>
             <DadosContato
               valor={dadosContato}
@@ -130,9 +140,9 @@ export default function OrcamentoPage() {
               onCepChange={setCep}
             />
 
-            <fieldset>
-              <legend>Livros ({totalLivros} selecionado(s))</legend>
-              {produtosSelecionaveis.map((produto) => (
+            <div className="card">
+              <h3>Class Books — Educação Infantil</h3>
+              {produtosInfantil.map((produto) => (
                 <ProdutoLinha
                   key={produto.id}
                   produto={produto}
@@ -143,11 +153,28 @@ export default function OrcamentoPage() {
                   onTeachersGuideChange={(ativo) => alternarTeachersGuide(produto.id, ativo)}
                 />
               ))}
-            </fieldset>
+            </div>
+
+            <div className="card">
+              <h3>Coleção Tots — Fundamental 1</h3>
+              {produtosTots.map((produto) => (
+                <ProdutoLinha
+                  key={produto.id}
+                  produto={produto}
+                  quantidade={selecoes[produto.id]?.quantidade ?? 0}
+                  teachersGuide={selecoes[produto.id]?.teachersGuide ?? false}
+                  temTeachersGuide={produto.nome !== 'My Baby Book'}
+                  onQuantidadeChange={(q) => definirQuantidade(produto.id, q)}
+                  onTeachersGuideChange={(ativo) => alternarTeachersGuide(produto.id, ativo)}
+                />
+              ))}
+            </div>
+
+            <p className="orcamento-form__contagem">{totalLivros} livro(s) selecionado(s)</p>
 
             {erroEnvio && <p className="resumo__erro">{erroEnvio}</p>}
 
-            <button type="submit" disabled={enviando}>
+            <button type="submit" className="btn btn-primary orcamento-form__enviar" disabled={enviando}>
               {enviando ? 'Enviando...' : 'Enviar pedido de orçamento'}
             </button>
           </div>

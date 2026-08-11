@@ -4,6 +4,7 @@ import { formatarReais } from '../../lib/formato';
 import { atualizarAjusteManual, atualizarStatus, linkWhatsApp, totalComAjuste } from '../../lib/orcamentos';
 import { listarInteracoes, criarInteracao } from '../../lib/interacoes';
 import { enviarWhatsappManual } from '../../lib/whatsapp';
+import { capaProduto } from '../../lib/capas';
 import { Timeline } from './Timeline';
 
 const STATUS_OPCOES: { valor: StatusOrcamento; rotulo: string }[] = [
@@ -124,7 +125,7 @@ export function OrcamentoDetalhe({ orcamento, autorNome, onFechar, onAtualizado 
               {orcamento.responsavel_nome} — {orcamento.responsavel_email}
             </p>
           </div>
-          <button type="button" onClick={onFechar}>
+          <button type="button" className="btn btn-ghost" onClick={onFechar}>
             Fechar
           </button>
         </div>
@@ -134,7 +135,7 @@ export function OrcamentoDetalhe({ orcamento, autorNome, onFechar, onAtualizado 
             href={linkWhatsApp(orcamento.responsavel_whatsapp, mensagemWhatsapp)}
             target="_blank"
             rel="noreferrer"
-            className="orcamento-detalhe__whatsapp"
+            className="btn orcamento-detalhe__whatsapp"
           >
             Abrir no WhatsApp
           </a>
@@ -143,7 +144,7 @@ export function OrcamentoDetalhe({ orcamento, autorNome, onFechar, onAtualizado 
             href={`${window.location.origin}/aprovar/${orcamento.id}`}
             target="_blank"
             rel="noreferrer"
-            className="orcamento-detalhe__aprovacao"
+            className="btn btn-ghost"
           >
             Ver página de aprovação
           </a>
@@ -160,26 +161,34 @@ export function OrcamentoDetalhe({ orcamento, autorNome, onFechar, onAtualizado 
           </label>
         </div>
 
-        <table className="orcamento-detalhe__itens">
-          <thead>
-            <tr>
-              <th>Item</th>
-              <th>Qtd</th>
-              <th>Unitário</th>
-              <th>Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            {orcamento.itens.map((item, i) => (
-              <tr key={i}>
-                <td>{item.nome}</td>
-                <td>{item.quantidade}</td>
-                <td>{formatarReais(item.preco_unitario)}</td>
-                <td>{formatarReais(item.preco_unitario * item.quantidade)}</td>
+        <div className="tabela-scroll">
+          <table className="orcamento-detalhe__itens">
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th>Qtd</th>
+                <th>Unitário</th>
+                <th>Total</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {orcamento.itens.map((item, i) => {
+                const capa = capaProduto(item.nome.replace("Teacher's Guide — ", ''), item.teachers_guide);
+                return (
+                  <tr key={i}>
+                    <td className="orcamento-detalhe__item-nome">
+                      {capa && <img src={capa} alt="" loading="lazy" />}
+                      {item.nome}
+                    </td>
+                    <td>{item.quantidade}</td>
+                    <td>{formatarReais(item.preco_unitario)}</td>
+                    <td>{formatarReais(item.preco_unitario * item.quantidade)}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
 
         {orcamento.regras_aplicadas.length > 0 && (
           <ul className="orcamento-detalhe__beneficios">
@@ -214,7 +223,7 @@ export function OrcamentoDetalhe({ orcamento, autorNome, onFechar, onAtualizado 
             </dt>
             <dd>
               <input type="number" step="0.01" value={ajuste} onChange={(e) => setAjuste(e.target.value)} />
-              <button type="button" onClick={handleSalvarAjuste} disabled={salvandoAjuste}>
+              <button type="button" className="btn btn-ghost" onClick={handleSalvarAjuste} disabled={salvandoAjuste}>
                 {salvandoAjuste ? 'Salvando...' : 'Salvar'}
               </button>
             </dd>
@@ -230,7 +239,7 @@ export function OrcamentoDetalhe({ orcamento, autorNome, onFechar, onAtualizado 
             Mensagem de WhatsApp
             <textarea rows={3} value={mensagemWhatsapp} onChange={(e) => setMensagemWhatsapp(e.target.value)} />
           </label>
-          <button type="button" onClick={handleEnviarWhatsapp} disabled={enviandoWhatsapp}>
+          <button type="button" className="btn btn-primary" onClick={handleEnviarWhatsapp} disabled={enviandoWhatsapp}>
             {enviandoWhatsapp ? 'Enviando...' : 'Enviar via WhatsApp'}
           </button>
         </div>
@@ -244,7 +253,7 @@ export function OrcamentoDetalhe({ orcamento, autorNome, onFechar, onAtualizado 
               value={novaNota}
               onChange={(e) => setNovaNota(e.target.value)}
             />
-            <button type="button" onClick={handleAdicionarNota} disabled={salvandoNota || !novaNota.trim()}>
+            <button type="button" className="btn btn-ghost" onClick={handleAdicionarNota} disabled={salvandoNota || !novaNota.trim()}>
               {salvandoNota ? 'Salvando...' : 'Adicionar nota'}
             </button>
           </div>

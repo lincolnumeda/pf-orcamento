@@ -91,32 +91,44 @@ export default function RegrasPage() {
     }
   }
 
-  if (carregando) return <main>Carregando regras...</main>;
-  if (erro) return <main>Erro ao carregar regras: {erro}</main>;
+  if (carregando) return <main className="regras-page">Carregando regras...</main>;
+  if (erro) return <main className="regras-page">Erro ao carregar regras: {erro}</main>;
+
+  const ativasCount = regras.filter((r) => r.ativa).length;
 
   return (
     <main className="regras-page">
+      <div className="pagehead">
+        <h1>Regras de desconto e brinde</h1>
+        <p>Cada regra tem um gatilho e um benefício. Ligue, desligue ou edite livremente.</p>
+      </div>
+
       <div className="regras-page__cabecalho">
-        <h1>Administração de regras</h1>
-        <button type="button" onClick={() => setEditando('novo')}>
+        <span className="regras-page__contador">
+          <b>{ativasCount}</b> regra(s) ativa(s) agora
+        </span>
+        <button type="button" className="btn btn-primary" onClick={() => setEditando('novo')}>
           + Nova regra
         </button>
       </div>
 
       {editando && (
-        <div className="regra-form__painel">
-          <h2>{editando === 'novo' ? 'Nova regra' : `Editar: ${editando.nome}`}</h2>
-          <RegraForm
-            valorInicial={editando === 'novo' ? REGRA_PADRAO : paraInput(editando)}
-            itensBeneficioDisponiveis={itensBeneficioDisponiveis}
-            salvando={salvando}
-            erro={erroForm}
-            onSalvar={handleSalvar}
-            onCancelar={() => {
-              setEditando(null);
-              setErroForm(null);
-            }}
-          />
+        <div className="modal-backdrop" onClick={() => setEditando(null)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <h2>{editando === 'novo' ? 'Nova regra' : `Editar: ${editando.nome}`}</h2>
+            <p className="modal__sub">Defina quando ela dispara e o que ela dá.</p>
+            <RegraForm
+              valorInicial={editando === 'novo' ? REGRA_PADRAO : paraInput(editando)}
+              itensBeneficioDisponiveis={itensBeneficioDisponiveis}
+              salvando={salvando}
+              erro={erroForm}
+              onSalvar={handleSalvar}
+              onCancelar={() => {
+                setEditando(null);
+                setErroForm(null);
+              }}
+            />
+          </div>
         </div>
       )}
 
