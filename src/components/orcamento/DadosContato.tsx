@@ -44,7 +44,7 @@ export function DadosContato({ valor, cep, cidadeUf, onChange, onCepChange }: Pr
             type="tel"
             required
             inputMode="numeric"
-            placeholder="(11) 98312-0446"
+            placeholder="(99) 99999-9999"
             maxLength={15}
             value={valor.responsavelWhatsapp}
             onChange={(e) => onChange({ ...valor, responsavelWhatsapp: formatarWhatsapp(e.target.value) })}
