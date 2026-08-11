@@ -48,8 +48,11 @@ export function ProdutoLinha({
         <input
           type="text"
           inputMode="numeric"
-          readOnly
-          value={quantidade}
+          value={quantidade === 0 ? '' : quantidade}
+          onChange={(e) => {
+            const digitos = e.target.value.replace(/\D/g, '');
+            onQuantidadeChange(digitos === '' ? 0 : Math.min(Number(digitos), 9999));
+          }}
           aria-label={`Quantidade de ${produto.nome}`}
         />
         <button type="button" onClick={() => onQuantidadeChange(quantidade + 1)} aria-label="Aumentar">

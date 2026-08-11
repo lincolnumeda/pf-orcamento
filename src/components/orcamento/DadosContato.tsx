@@ -1,3 +1,5 @@
+import { formatarWhatsapp } from '../../lib/formato';
+
 export interface DadosContatoValor {
   escolaNome: string;
   responsavelNome: string;
@@ -38,7 +40,15 @@ export function DadosContato({ valor, cep, cidadeUf, onChange, onCepChange }: Pr
 
         <label className="campo">
           WhatsApp
-          <input type="tel" required value={valor.responsavelWhatsapp} onChange={set('responsavelWhatsapp')} />
+          <input
+            type="tel"
+            required
+            inputMode="numeric"
+            placeholder="(11) 98312-0446"
+            maxLength={15}
+            value={valor.responsavelWhatsapp}
+            onChange={(e) => onChange({ ...valor, responsavelWhatsapp: formatarWhatsapp(e.target.value) })}
+          />
         </label>
       </div>
 
