@@ -1,5 +1,6 @@
 import { orcamentoDb } from './supabase';
 import type { Orcamento, StatusOrcamento } from '../types';
+import { criarInteracao, descreverMudancaStatus } from './interacoes';
 
 export async function listarOrcamentos(): Promise<Orcamento[]> {
   const { data, error } = await orcamentoDb.from('orcamentos').select('*').order('criado_em', { ascending: false });
@@ -7,20 +8,21 @@ export async function listarOrcamentos(): Promise<Orcamento[]> {
   return data ?? [];
 }
 
-export async function atualizarStatus(id: string, status: StatusOrcamento): Promise<void> {
+// Registra a transição na linha do tempo (ex: "Priscila moveu de Recebido →
+// Em conversa") junto com a mudança — autor vem da sessão logada na Central.
+export async function atualizarStatus(
+  id: string,
+  statusAnterior: StatusOrcamento,
+  novoStatus: StatusOrcamento,
+  autor: string,
+): Promise<void> {
   const { error } = await orcamentoDb
     .from('orcamentos')
-    .update({ status, atualizado_em: new Date().toISOString() })
+    .update({ status: novoStatus, atualizado_em: new Date().toISOString() })
     .eq('id', id);
   if (error) throw error;
-}
 
-export async function atualizarNotas(id: string, notas_internas: string): Promise<void> {
-  const { error } = await orcamentoDb
-    .from('orcamentos')
-    .update({ notas_internas, atualizado_em: new Date().toISOString() })
-    .eq('id', id);
-  if (error) throw error;
+  await criarInteracao(id, 'status_alterado', descreverMudancaStatus(autor, statusAnterior, novoStatus), autor);
 }
 
 export async function atualizarAjusteManual(id: string, ajuste_manual: number): Promise<void> {

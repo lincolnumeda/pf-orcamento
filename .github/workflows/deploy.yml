@@ -32,6 +32,10 @@ jobs:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
 
+      - name: Injetar segredo do relay de WhatsApp
+        run: |
+          sed -i "s/__RELAY_SHARED_SECRET__/${{ secrets.RELAY_SHARED_SECRET }}/" dist/api/enviar-whatsapp-relay.php
+
       - name: Deploy via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:

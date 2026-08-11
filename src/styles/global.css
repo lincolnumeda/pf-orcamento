@@ -764,3 +764,144 @@ button[type='submit']:disabled {
   opacity: 0.6;
   cursor: default;
 }
+
+.orcamento-detalhe__whatsapp-manual {
+  margin: 20px 0;
+  padding: 14px;
+  background: #f9fafb;
+  border-radius: 8px;
+}
+
+.orcamento-detalhe__whatsapp-manual label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.85rem;
+  margin-bottom: 8px;
+}
+
+.orcamento-detalhe__whatsapp-manual textarea {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font: inherit;
+  resize: vertical;
+}
+
+.orcamento-detalhe__whatsapp-manual button {
+  padding: 8px 16px;
+  background: #16a34a;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.orcamento-detalhe__whatsapp-manual button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.orcamento-detalhe__timeline-secao {
+  margin-top: 20px;
+}
+
+.orcamento-detalhe__timeline-secao h3 {
+  font-size: 1rem;
+  margin-bottom: 10px;
+}
+
+.orcamento-detalhe__nova-nota {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.orcamento-detalhe__nova-nota textarea {
+  flex: 1;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font: inherit;
+  resize: vertical;
+}
+
+.orcamento-detalhe__nova-nota button {
+  padding: 8px 14px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: #fff;
+  cursor: pointer;
+  align-self: flex-start;
+}
+
+.orcamento-detalhe__nova-nota button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.timeline {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.timeline__item {
+  border-left: 3px solid #d1d5db;
+  padding: 6px 12px;
+  font-size: 0.85rem;
+}
+
+.timeline__item--nota {
+  border-left-color: #4f46e5;
+}
+
+.timeline__item--whatsapp_enviado {
+  border-left-color: #16a34a;
+}
+
+.timeline__item--status_alterado {
+  border-left-color: #f59e0b;
+}
+
+.timeline__item--email_enviado {
+  border-left-color: #004aad;
+}
+
+.timeline__cabecalho {
+  display: flex;
+  justify-content: space-between;
+  color: #666;
+  font-size: 0.75rem;
+  margin-bottom: 2px;
+}
+
+.timeline__tipo {
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.timeline__conteudo {
+  margin: 0;
+  color: #111827;
+}
+
+.timeline__autor {
+  display: block;
+  color: #888;
+  font-size: 0.72rem;
+  margin-top: 2px;
+}
+
+.timeline__vazio,
+.timeline__carregando {
+  color: #999;
+  font-size: 0.85rem;
+}

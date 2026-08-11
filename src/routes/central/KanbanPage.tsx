@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useOrcamentos } from '../../hooks/useOrcamentos';
+import { useAuth } from '../../hooks/useAuth';
 import { KanbanColuna } from '../../components/central/KanbanColuna';
 import { OrcamentoDetalhe } from '../../components/central/OrcamentoDetalhe';
 import type { Orcamento, StatusOrcamento } from '../../types';
@@ -14,6 +15,8 @@ const COLUNAS: { status: StatusOrcamento; titulo: string }[] = [
 
 export default function KanbanPage() {
   const { orcamentos, carregando, erro, setOrcamentos } = useOrcamentos();
+  const auth = useAuth();
+  const autorNome = auth.status === 'autorizado' ? auth.usuario.nome || auth.usuario.email : '';
   const [busca, setBusca] = useState('');
   const [selecionado, setSelecionado] = useState<Orcamento | null>(null);
 
@@ -57,7 +60,12 @@ export default function KanbanPage() {
       </div>
 
       {selecionado && (
-        <OrcamentoDetalhe orcamento={selecionado} onFechar={() => setSelecionado(null)} onAtualizado={handleAtualizado} />
+        <OrcamentoDetalhe
+          orcamento={selecionado}
+          autorNome={autorNome}
+          onFechar={() => setSelecionado(null)}
+          onAtualizado={handleAtualizado}
+        />
       )}
     </main>
   );

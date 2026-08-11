@@ -1,7 +1,10 @@
-import { useState } from 'react';
-import type { Orcamento, StatusOrcamento } from '../../types';
+import { useEffect, useState } from 'react';
+import type { Interacao, Orcamento, StatusOrcamento } from '../../types';
 import { formatarReais } from '../../lib/formato';
-import { atualizarAjusteManual, atualizarNotas, atualizarStatus, linkWhatsApp, totalComAjuste } from '../../lib/orcamentos';
+import { atualizarAjusteManual, atualizarStatus, linkWhatsApp, totalComAjuste } from '../../lib/orcamentos';
+import { listarInteracoes, criarInteracao } from '../../lib/interacoes';
+import { enviarWhatsappManual } from '../../lib/whatsapp';
+import { Timeline } from './Timeline';
 
 const STATUS_OPCOES: { valor: StatusOrcamento; rotulo: string }[] = [
   { valor: 'recebido', rotulo: 'Recebido' },
@@ -13,36 +16,81 @@ const STATUS_OPCOES: { valor: StatusOrcamento; rotulo: string }[] = [
 
 interface Props {
   orcamento: Orcamento;
+  autorNome: string;
   onFechar: () => void;
   onAtualizado: (orcamento: Orcamento) => void;
 }
 
-export function OrcamentoDetalhe({ orcamento, onFechar, onAtualizado }: Props) {
-  const [notas, setNotas] = useState(orcamento.notas_internas ?? '');
+export function OrcamentoDetalhe({ orcamento, autorNome, onFechar, onAtualizado }: Props) {
+  const [interacoes, setInteracoes] = useState<Interacao[]>([]);
+  const [carregandoInteracoes, setCarregandoInteracoes] = useState(true);
+  const [novaNota, setNovaNota] = useState('');
+  const [salvandoNota, setSalvandoNota] = useState(false);
+
+  const [mensagemWhatsapp, setMensagemWhatsapp] = useState(
+    `Olá ${orcamento.responsavel_nome}, tudo bem? Vi que você solicitou um orçamento com a gente, ficou alguma dúvida?`,
+  );
+  const [enviandoWhatsapp, setEnviandoWhatsapp] = useState(false);
+
   const [ajuste, setAjuste] = useState(String(orcamento.ajuste_manual));
-  const [salvandoNotas, setSalvandoNotas] = useState(false);
   const [salvandoAjuste, setSalvandoAjuste] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
 
-  async function handleStatusChange(status: StatusOrcamento) {
+  useEffect(() => {
+    let cancelado = false;
+    setCarregandoInteracoes(true);
+    listarInteracoes(orcamento.id)
+      .then((dados) => {
+        if (!cancelado) setInteracoes(dados);
+      })
+      .catch((err) => {
+        if (!cancelado) setErro(err instanceof Error ? err.message : 'Erro ao carregar histórico');
+      })
+      .finally(() => {
+        if (!cancelado) setCarregandoInteracoes(false);
+      });
+    return () => {
+      cancelado = true;
+    };
+  }, [orcamento.id]);
+
+  async function handleStatusChange(novoStatus: StatusOrcamento) {
+    const statusAnterior = orcamento.status;
     try {
-      await atualizarStatus(orcamento.id, status);
-      onAtualizado({ ...orcamento, status });
+      await atualizarStatus(orcamento.id, statusAnterior, novoStatus, autorNome);
+      onAtualizado({ ...orcamento, status: novoStatus });
+      setInteracoes(await listarInteracoes(orcamento.id));
     } catch (err) {
       setErro(err instanceof Error ? err.message : 'Erro ao mudar status');
     }
   }
 
-  async function handleSalvarNotas() {
-    setSalvandoNotas(true);
+  async function handleAdicionarNota() {
+    if (!novaNota.trim()) return;
+    setSalvandoNota(true);
     setErro(null);
     try {
-      await atualizarNotas(orcamento.id, notas);
-      onAtualizado({ ...orcamento, notas_internas: notas });
+      await criarInteracao(orcamento.id, 'nota', novaNota.trim(), autorNome);
+      setNovaNota('');
+      setInteracoes(await listarInteracoes(orcamento.id));
     } catch (err) {
-      setErro(err instanceof Error ? err.message : 'Erro ao salvar notas');
+      setErro(err instanceof Error ? err.message : 'Erro ao salvar nota');
     } finally {
-      setSalvandoNotas(false);
+      setSalvandoNota(false);
+    }
+  }
+
+  async function handleEnviarWhatsapp() {
+    if (!mensagemWhatsapp.trim()) return;
+    setEnviandoWhatsapp(true);
+    setErro(null);
+    try {
+      await enviarWhatsappManual(orcamento.id, mensagemWhatsapp.trim(), autorNome);
+      setInteracoes(await listarInteracoes(orcamento.id));
+    } catch (err) {
+      setErro(err instanceof Error ? err.message : 'Erro ao enviar WhatsApp');
+    } finally {
+      setEnviandoWhatsapp(false);
     }
   }
 
@@ -83,12 +131,12 @@ export function OrcamentoDetalhe({ orcamento, onFechar, onAtualizado }: Props) {
 
         <div className="orcamento-detalhe__acoes-topo">
           <a
-            href={linkWhatsApp(orcamento.responsavel_whatsapp, `Olá ${orcamento.responsavel_nome}, tudo bem?`)}
+            href={linkWhatsApp(orcamento.responsavel_whatsapp, mensagemWhatsapp)}
             target="_blank"
             rel="noreferrer"
             className="orcamento-detalhe__whatsapp"
           >
-            Chamar no WhatsApp
+            Abrir no WhatsApp
           </a>
 
           <a
@@ -177,13 +225,31 @@ export function OrcamentoDetalhe({ orcamento, onFechar, onAtualizado }: Props) {
           </div>
         </dl>
 
-        <label className="orcamento-detalhe__notas">
-          Notas internas
-          <textarea rows={4} value={notas} onChange={(e) => setNotas(e.target.value)} />
-        </label>
-        <button type="button" onClick={handleSalvarNotas} disabled={salvandoNotas}>
-          {salvandoNotas ? 'Salvando...' : 'Salvar notas'}
-        </button>
+        <div className="orcamento-detalhe__whatsapp-manual">
+          <label>
+            Mensagem de WhatsApp
+            <textarea rows={3} value={mensagemWhatsapp} onChange={(e) => setMensagemWhatsapp(e.target.value)} />
+          </label>
+          <button type="button" onClick={handleEnviarWhatsapp} disabled={enviandoWhatsapp}>
+            {enviandoWhatsapp ? 'Enviando...' : 'Enviar via WhatsApp'}
+          </button>
+        </div>
+
+        <div className="orcamento-detalhe__timeline-secao">
+          <h3>Histórico</h3>
+          <div className="orcamento-detalhe__nova-nota">
+            <textarea
+              rows={2}
+              placeholder="Adicionar nota interna..."
+              value={novaNota}
+              onChange={(e) => setNovaNota(e.target.value)}
+            />
+            <button type="button" onClick={handleAdicionarNota} disabled={salvandoNota || !novaNota.trim()}>
+              {salvandoNota ? 'Salvando...' : 'Adicionar nota'}
+            </button>
+          </div>
+          <Timeline interacoes={interacoes} carregando={carregandoInteracoes} />
+        </div>
 
         {erro && <p className="resumo__erro">{erro}</p>}
       </div>

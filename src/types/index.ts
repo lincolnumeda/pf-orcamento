@@ -83,6 +83,19 @@ export interface RegraAplicada {
   valor_economizado: number;
 }
 
+export type TipoInteracao = 'nota' | 'whatsapp_enviado' | 'status_alterado' | 'email_enviado';
+
+// Linha do tempo do orçamento na Central — substitui o campo único de notas
+// internas. Log imutável: só cria, nunca edita/apaga (ver RLS da tabela).
+export interface Interacao {
+  id: string;
+  orcamento_id: string;
+  tipo: TipoInteracao;
+  conteudo: string;
+  autor: string | null;
+  criado_em: string;
+}
+
 export interface Orcamento {
   id: string;
   escola_nome: string;

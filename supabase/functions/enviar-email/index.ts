@@ -1,3 +1,4 @@
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { SMTPClient } from 'https://deno.land/x/denomailer@1.6.0/mod.ts';
 import { encodeBase64 } from 'https://deno.land/std@0.224.0/encoding/base64.ts';
 import { corsHeaders } from '../_shared/cors.ts';
@@ -158,6 +159,20 @@ Deno.serve(async (req) => {
       ],
     });
     await client.close();
+
+    // Best-effort: o email já saiu — se o log falhar não deve virar erro pro
+    // cliente que está enviando o orçamento.
+    try {
+      const supabase = createClient(
+        Deno.env.get('SUPABASE_URL')!,
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+      ).schema('orcamento');
+      await supabase
+        .from('interacoes')
+        .insert({ orcamento_id: orcamentoId, tipo: 'email_enviado', conteudo: `Email enviado para ${destinatario}`, autor: null });
+    } catch {
+      // não bloqueia a resposta de sucesso do envio do email
+    }
 
     return jsonResponse({ enviado: true });
   } catch (err) {
