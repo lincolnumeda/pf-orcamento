@@ -356,6 +356,36 @@ fieldset legend {
   flex-shrink: 0;
 }
 
+.topbar__abas {
+  display: flex;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 4px;
+  border-radius: 10px;
+}
+
+.topbar__abas .tab {
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.7);
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.8rem;
+  cursor: pointer;
+  text-decoration: none;
+  transition: 0.15s;
+}
+
+.topbar__abas .tab:hover {
+  color: #fff;
+}
+
+.topbar__abas .tab--ativa {
+  background: var(--orange);
+  color: #fff;
+}
+
 .topbar__conta {
   display: flex;
   align-items: center;
