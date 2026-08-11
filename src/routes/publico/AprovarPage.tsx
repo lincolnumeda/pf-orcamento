@@ -39,7 +39,6 @@ export default function AprovarPage() {
   if (erro || !orcamento) return <main className="aprovar-page">Não foi possível carregar este orçamento: {erro}</main>;
 
   const total = totalComAjuste(orcamento);
-  const parcelaAproximada = total / 10;
 
   return (
     <main className="aprovar-page">
@@ -111,8 +110,8 @@ export default function AprovarPage() {
         </dl>
 
         <p className="aprovar-page__parcelamento">
-          A partir de {formatarReais(parcelaAproximada)} em até 10x no cartão (simulação aproximada — o parcelamento
-          exato é escolhido no checkout do Mercado Pago).
+          Parcelamento no cartão disponível em até 10x, com juros. O valor de cada parcela aparece no checkout do
+          Mercado Pago.
         </p>
 
         {orcamento.link_pagamento ? (
