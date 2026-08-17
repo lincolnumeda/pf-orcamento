@@ -13,7 +13,7 @@ export default function LoginPage() {
     <main className="login-page">
       <div className="login-page__card">
         <h1>Central de Orçamentos</h1>
-        <p className="login-page__subtitulo">Pequenos Fluentes</p>
+        <p className="login-page__subtitulo">Plataforma Corporativa</p>
 
         {auth.status === 'nao_autorizado' && (
           <div className="login-page__negado">

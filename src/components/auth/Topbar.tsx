@@ -1,27 +1,29 @@
 import { NavLink } from 'react-router-dom';
-import type { UsuarioAutorizado } from '../../lib/auth';
 import { sair } from '../../lib/auth';
 
-export function Topbar({ usuario }: { usuario: UsuarioAutorizado }) {
+const HUB_URL = 'https://corporativo.pequenosfluentes.com.br/dashboard';
+
+export function Topbar() {
   return (
     <div className="topbar">
-      <div className="topbar__marca">
-        <span className="topbar__ponto" />
-        Pequenos Fluentes
-      </div>
+      <div className="topbar__inner">
+        <div className="topbar__esquerda">
+          <a className="topbar__voltar" href={HUB_URL}>
+            <span aria-hidden="true">←</span> <span className="topbar__voltar-label">Voltar</span>
+          </a>
+          <h1 className="topbar__titulo">Central de Orçamentos</h1>
+        </div>
 
-      <nav className="topbar__abas">
-        <NavLink to="/central" className={({ isActive }) => `tab ${isActive ? 'tab--ativa' : ''}`}>
-          Central
-        </NavLink>
-        <NavLink to="/admin/regras" className={({ isActive }) => `tab ${isActive ? 'tab--ativa' : ''}`}>
-          Regras
-        </NavLink>
-      </nav>
+        <nav className="topbar__abas">
+          <NavLink to="/central" className={({ isActive }) => `tab ${isActive ? 'tab--ativa' : ''}`}>
+            Central
+          </NavLink>
+          <NavLink to="/admin/regras" className={({ isActive }) => `tab ${isActive ? 'tab--ativa' : ''}`}>
+            Regras
+          </NavLink>
+        </nav>
 
-      <div className="topbar__conta">
-        <span className="topbar__usuario">{usuario.nome || usuario.email}</span>
-        <button className="btn btn-ghost" onClick={() => sair()}>
+        <button className="topbar__sair" onClick={() => sair()}>
           Sair
         </button>
       </div>

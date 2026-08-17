@@ -1,15 +1,60 @@
 :root {
   color-scheme: light;
-  --navy: #1a1a2e;
-  --orange: #ff6a32;
-  --orange-dark: #e0551f;
-  --green: #349529;
-  --green-bg: #eaf6e8;
-  --mint: #b6e2d3;
-  --bg: #f5f6f5;
-  --surface: #ffffff;
-  --line: #e4e3df;
-  --muted: #71717a;
+
+  /* Tokens — mesma fonte de verdade do design system pf-corporativo */
+  --color-primary: #6fa8dc;
+  --color-primary-dark: #3d7cb4;
+  --color-primary-soft: #e8f2fb;
+
+  --color-ink: #2b3a55;
+  --color-text: #4c5b75;
+  --color-text-muted: #8b98ac;
+
+  --color-background: #f5f9fd;
+  --color-surface: #ffffff;
+  --color-border: #dce6f2;
+
+  --color-success-bg: #e1f5ea;
+  --color-success-text: #2e9e5b;
+  --color-error-bg: #fceaea;
+  --color-error-text: #d6534b;
+
+  --font-sans: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --text-xs: 11px;
+  --text-sm: 13px;
+  --text-base: 14px;
+  --text-md: 16px;
+  --text-lg: 20px;
+  --text-xl: 24px;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-pill: 999px;
+
+  --content-width: 1200px;
+  --tap-target: 44px;
+
+  /* Aliases legados — o restante do CSS ainda referencia esses nomes;
+     apontam pros tokens novos acima pra herdar a cor sem reescrever
+     cada regra nesta rodada. */
+  --navy: var(--color-ink);
+  --orange: var(--color-primary);
+  --orange-dark: var(--color-primary-dark);
+  --green: var(--color-success-text);
+  --green-bg: var(--color-success-bg);
+  --bg: var(--color-background);
+  --surface: var(--color-surface);
+  --line: var(--color-border);
+  --muted: var(--color-text-muted);
 }
 
 * {
@@ -20,7 +65,7 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--navy);
-  font-family: 'Nunito', sans-serif;
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
 }
 
@@ -30,7 +75,7 @@ h3,
 .btn,
 .pill,
 .badge-live {
-  font-family: 'Poppins', sans-serif;
+  font-family: var(--font-sans);
 }
 
 .tabnums {
@@ -119,14 +164,14 @@ a {
   font-weight: 600;
   padding: 3px 9px;
   border-radius: 100px;
-  background: var(--mint);
-  color: #0f4a37;
-  font-family: 'Poppins', sans-serif;
+  background: var(--color-success-bg);
+  color: var(--color-success-text);
+  font-family: var(--font-sans);
 }
 
 .pill--grupo {
-  background: #fde3d3;
-  color: #8a3a12;
+  background: var(--color-primary-soft);
+  color: var(--color-primary-dark);
 }
 
 .badge-live {
@@ -195,7 +240,7 @@ a {
   text-align: center;
   border: none;
   font-weight: 700;
-  font-family: 'Poppins', sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.85rem;
 }
 
@@ -237,7 +282,7 @@ textarea {
   padding: 9px 11px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  font-family: 'Nunito', sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.9rem;
   background: #fbfbfa;
   color: var(--navy);
@@ -258,7 +303,7 @@ fieldset legend {
   padding: 0 6px;
   text-transform: uppercase;
   letter-spacing: 0.03em;
-  font-family: 'Poppins', sans-serif;
+  font-family: var(--font-sans);
 }
 
 .row2,
@@ -330,47 +375,72 @@ fieldset legend {
 /* ===== Topbar ===== */
 
 .topbar {
+  background: var(--color-primary);
+  padding: var(--space-3) var(--space-4);
+}
+
+.topbar__inner {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 12px;
-  padding: 14px 20px;
-  background: var(--navy);
+  gap: var(--space-3);
+  max-width: var(--content-width);
+  margin: 0 auto;
   flex-wrap: wrap;
 }
 
-.topbar__marca {
-  color: #fff;
-  font-weight: 800;
-  font-size: 0.9rem;
-  font-family: 'Poppins', sans-serif;
+.topbar__esquerda {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-3);
+  flex-wrap: wrap;
 }
 
-.topbar__ponto {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background: var(--orange);
+.topbar__voltar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   flex-shrink: 0;
+  min-height: var(--tap-target);
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-pill);
+  border: none;
+  background: rgba(255, 255, 255, 0.22);
+  color: var(--color-ink);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s;
+}
+
+.topbar__voltar:hover {
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.topbar__titulo {
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: var(--color-ink);
+  margin: 0;
+  font-family: var(--font-sans);
 }
 
 .topbar__abas {
   display: flex;
   gap: 6px;
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.3);
   padding: 4px;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
 }
 
 .topbar__abas .tab {
   border: none;
   background: transparent;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--color-text);
   padding: 8px 14px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-weight: 600;
   font-size: 0.8rem;
   cursor: pointer;
@@ -379,23 +449,26 @@ fieldset legend {
 }
 
 .topbar__abas .tab:hover {
-  color: #fff;
+  color: var(--color-ink);
 }
 
 .topbar__abas .tab--ativa {
-  background: var(--orange);
-  color: #fff;
+  background: #fff;
+  color: var(--color-primary-dark);
 }
 
-.topbar__conta {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.topbar__usuario {
-  color: rgba(255, 255, 255, 0.85);
-  font-size: 0.8rem;
+.topbar__sair {
+  flex-shrink: 0;
+  min-height: var(--tap-target);
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-pill);
+  border: none;
+  background: var(--color-surface);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--color-ink);
+  cursor: pointer;
+  font-family: inherit;
 }
 
 /* ===== Página pública de orçamento ===== */
@@ -532,7 +605,7 @@ fieldset legend {
 .sum-total {
   display: flex;
   justify-content: space-between;
-  font-family: 'Poppins', sans-serif;
+  font-family: var(--font-sans);
   font-weight: 800;
   font-size: 1.15rem;
   border-top: 1px solid var(--line);
@@ -640,7 +713,7 @@ fieldset legend {
 }
 
 .regra-linha__nome {
-  font-family: 'Poppins', sans-serif;
+  font-family: var(--font-sans);
   font-weight: 700;
   font-size: 0.95rem;
   grid-column: 1 / 2;
@@ -676,7 +749,7 @@ fieldset legend {
   font-size: 0.78rem;
   cursor: pointer;
   text-decoration: underline;
-  font-family: 'Nunito', sans-serif;
+  font-family: var(--font-sans);
   padding: 0;
 }
 
@@ -755,7 +828,7 @@ fieldset legend {
 
 .kanban-page {
   padding: 20px 16px 40px;
-  max-width: 1400px;
+  max-width: var(--content-width);
   margin: 0 auto;
 }
 
@@ -820,7 +893,7 @@ fieldset legend {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-family: 'Poppins', sans-serif;
+  font-family: var(--font-sans);
 }
 
 .kanban-coluna__contador {
@@ -866,7 +939,7 @@ fieldset legend {
 }
 
 .orcamento-card--aprovado {
-  border-left-color: var(--mint);
+  border-left-color: var(--color-success-text);
 }
 
 .orcamento-card--pago {
@@ -880,7 +953,7 @@ fieldset legend {
 .orcamento-card__escola {
   font-weight: 700;
   font-size: 0.85rem;
-  font-family: 'Poppins', sans-serif;
+  font-family: var(--font-sans);
 }
 
 .orcamento-card__responsavel {
@@ -1095,7 +1168,7 @@ fieldset legend {
 .orcamento-detalhe__timeline-secao h3 {
   font-size: 1rem;
   margin-bottom: 10px;
-  font-family: 'Poppins', sans-serif;
+  font-family: var(--font-sans);
 }
 
 .orcamento-detalhe__nova-nota {
@@ -1152,7 +1225,7 @@ fieldset legend {
 }
 
 .timeline__item--email_enviado {
-  border-left-color: var(--mint);
+  border-left-color: var(--color-success-text);
 }
 
 .timeline__cabecalho {
@@ -1167,7 +1240,7 @@ fieldset legend {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.03em;
-  font-family: 'Poppins', sans-serif;
+  font-family: var(--font-sans);
 }
 
 .timeline__conteudo {

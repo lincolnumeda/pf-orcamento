@@ -11,7 +11,7 @@ export function RequireAuth({ children }: { children: ReactNode }) {
 
   return (
     <>
-      <Topbar usuario={auth.usuario} />
+      <Topbar />
       {children}
     </>
   );
