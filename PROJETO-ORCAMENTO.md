@@ -48,11 +48,13 @@ Não são regras fixas no código — é um modelo **genérico e parametrizável
 ### Regras de exemplo (estado inicial desejado)
 1. **Frete grátis (pedido menor):** 10+ livros E frete calculado ≤ R$100 → 100% de desconto no frete. Grupo: `frete`.
 2. **Frete 50% off (pedido distante):** 10+ livros E frete calculado > R$100 → 50% de desconto no frete. Grupo: `frete`.
-3. **Teacher's Guide de brinde:** a cada 10 livros → 1 Teacher's Guide grátis. Grupo: `brinde-livro`.
+3. **Teacher's Guide de brinde:** a cada 10 livros → 1 Teacher's Guide grátis, **até no máximo o número de títulos diferentes escolhidos no pedido** (excluindo My Baby Book, que não tem TG). Ou seja, a quantidade final de TGs de brinde é o MÍNIMO entre (total de livros ÷ 10, arredondado pra baixo) e (nº de títulos diferentes elegíveis). Isso evita pedidos com muita quantidade concentrada em poucos títulos gerando TGs demais (ex: 176 livros em só 3 títulos deve dar 3 TGs, não 17). Grupo: `brinde-livro`.
 4. **2 Assinaturas de brinde (pedido grande):** valor do pedido ≥ R$2.000 → 2 assinaturas grátis. Grupo: `beneficio-grande` (compete com desconto de frete — se disparar, não dá desconto de frete).
 
 ### Regra de contagem
-O My Baby Book **conta normalmente** na soma total de livros usada pelos gatilhos de quantidade (ex: "10+ livros"), junto com Hello Baby!, Tiny People, Little Explorers e a coleção Tots. Não há tratamento especial de contagem — só a ausência do benefício "Teacher's Guide" pra esse item específico, já que ele não existe como produto separado.
+O My Baby Book **conta normalmente** na soma total de livros usada pelos gatilhos de quantidade (ex: "10+ livros"), junto com Hello Baby!, Tiny People, Little Explorers e a coleção Tots. Para o gatilho de quantidade em si não há tratamento especial — só a ausência do benefício "Teacher's Guide" pra esse item específico, já que ele não existe como produto separado.
+
+Já pro **teto de TGs de brinde por título** (regra 3), o My Baby Book é excluído da contagem de "títulos diferentes elegíveis" — não faz sentido contar um título que nunca vai gerar TG.
 
 ### Comportamento esperado
 - Cálculo **em tempo real** na tela do cliente, a cada mudança de quantidade/CEP

@@ -78,6 +78,15 @@ function regrasBase(): Regra[] {
 
 const produtosBase: Produto[] = [
   {
+    id: 'p-my-baby-book',
+    nome: 'My Baby Book',
+    categoria: 'infantil',
+    preco: 114.9,
+    livro_relacionado: null,
+    ativo: true,
+    woocommerce_id: 18501,
+  },
+  {
     id: 'p-hello-baby',
     nome: 'Hello Baby!',
     categoria: 'infantil',
@@ -85,6 +94,69 @@ const produtosBase: Produto[] = [
     livro_relacionado: null,
     ativo: true,
     woocommerce_id: 13686,
+  },
+  {
+    id: 'p-tiny-people',
+    nome: 'Tiny People',
+    categoria: 'infantil',
+    preco: 99.9,
+    livro_relacionado: null,
+    ativo: true,
+    woocommerce_id: 10726,
+  },
+  {
+    id: 'p-little-explorers',
+    nome: 'Little Explorers',
+    categoria: 'infantil',
+    preco: 99.9,
+    livro_relacionado: null,
+    ativo: true,
+    woocommerce_id: 4896,
+  },
+  {
+    id: 'p-tots-1',
+    nome: 'Tots 1',
+    categoria: 'tots',
+    preco: 99.9,
+    livro_relacionado: null,
+    ativo: true,
+    woocommerce_id: 4313,
+  },
+  {
+    id: 'p-tots-2',
+    nome: 'Tots 2',
+    categoria: 'tots',
+    preco: 99.9,
+    livro_relacionado: null,
+    ativo: true,
+    woocommerce_id: 4499,
+  },
+  {
+    id: 'p-tots-3',
+    nome: 'Tots 3',
+    categoria: 'tots',
+    preco: 99.9,
+    livro_relacionado: null,
+    ativo: true,
+    woocommerce_id: 4917,
+  },
+  {
+    id: 'p-tots-4',
+    nome: 'Tots 4',
+    categoria: 'tots',
+    preco: 99.9,
+    livro_relacionado: null,
+    ativo: true,
+    woocommerce_id: 8091,
+  },
+  {
+    id: 'p-tots-5',
+    nome: 'Tots 5',
+    categoria: 'tots',
+    preco: 99.9,
+    livro_relacionado: null,
+    ativo: true,
+    woocommerce_id: 8093,
   },
   {
     id: 'p-tg',
@@ -106,8 +178,13 @@ const produtosBase: Produto[] = [
   },
 ];
 
-function livro(nome: string, quantidade: number, preco = 99.9): ItemOrcamento {
-  return { produto_id: nome, nome, categoria: 'infantil', quantidade, preco_unitario: preco, teachers_guide: false };
+function livro(
+  nome: string,
+  quantidade: number,
+  preco = 99.9,
+  categoria: 'infantil' | 'tots' = 'infantil',
+): ItemOrcamento {
+  return { produto_id: nome, nome, categoria, quantidade, preco_unitario: preco, teachers_guide: false };
 }
 
 function teachersGuide(nome: string, quantidade = 1, preco = 139.9): ItemOrcamento {
@@ -229,7 +306,7 @@ describe('calcularOrcamento', () => {
     expect(resultado.totalFinal).toBe(2580);
   });
 
-  it('20 livros: brinde de Teacher\'s Guide dobra (a_cada 10)', () => {
+  it('20 livros de 1 único título: TG de brinde é travado em 1 pelo teto de títulos, mesmo com a_cada 10 valendo 2', () => {
     const resultado = calcularOrcamento({
       itens: [livro('Hello Baby!', 20)],
       freteBruto: 80,
@@ -237,6 +314,27 @@ describe('calcularOrcamento', () => {
       produtos: produtosBase,
     });
 
+    // floor(20/10) = 2, mas só 1 título diferente no pedido → min(2, 1) = 1
+    expect(resultado.itensGratis).toContainEqual({
+      nome: "Teacher's Guide",
+      quantidade: 1,
+      precoUnitario: 139.9,
+      regraId: 'r-tg-brinde',
+    });
+
+    const tgBrinde = resultado.regrasAplicadas.find((r) => r.regra_id === 'r-tg-brinde')!;
+    expect(tgBrinde.valor_economizado).toBe(139.9); // 1x Teacher's Guide a R$139,90
+  });
+
+  it('20 livros em 2 títulos diferentes: aí sim o brinde de TG dobra (a_cada 10)', () => {
+    const resultado = calcularOrcamento({
+      itens: [livro('Hello Baby!', 10), livro('Tiny People', 10)],
+      freteBruto: 80,
+      regras: regrasBase(),
+      produtos: produtosBase,
+    });
+
+    // floor(20/10) = 2, e 2 títulos diferentes → min(2, 2) = 2
     expect(resultado.itensGratis).toContainEqual({
       nome: "Teacher's Guide",
       quantidade: 2,
@@ -246,6 +344,93 @@ describe('calcularOrcamento', () => {
 
     const tgBrinde = resultado.regrasAplicadas.find((r) => r.regra_id === 'r-tg-brinde')!;
     expect(tgBrinde.valor_economizado).toBe(279.8); // 2x Teacher's Guide a R$139,90
+  });
+
+  // Regra 3 (Teacher's Guide de brinde): MÍNIMO entre (total de livros ÷ 10,
+  // arredondado pra baixo) e (número de títulos diferentes escolhidos,
+  // excluindo My Baby Book). Casos confirmados manualmente, incluindo o
+  // pedido real da Escola Paradiso que estava dando 17 TGs com a lógica
+  // antiga (só livros ÷ 10) e deveria dar 3.
+  describe('regra 3 — teto de TG de brinde pelo número de títulos', () => {
+    it('10 de cada Tots 1 a 5 (50 livros, 5 títulos): floor(50/10)=5, min(5,5)=5 TGs', () => {
+      const resultado = calcularOrcamento({
+        itens: [
+          livro('Tots 1', 10, 99.9, 'tots'),
+          livro('Tots 2', 10, 99.9, 'tots'),
+          livro('Tots 3', 10, 99.9, 'tots'),
+          livro('Tots 4', 10, 99.9, 'tots'),
+          livro('Tots 5', 10, 99.9, 'tots'),
+        ],
+        freteBruto: 80,
+        regras: regrasBase(),
+        produtos: produtosBase,
+      });
+
+      expect(resultado.itensGratis).toContainEqual({
+        nome: "Teacher's Guide",
+        quantidade: 5,
+        precoUnitario: 139.9,
+        regraId: 'r-tg-brinde',
+      });
+    });
+
+    it('Hello Baby 8 + Tiny People 10 + Little Explorers 100 (118 livros, 3 títulos): floor(118/10)=11, min(11,3)=3 TGs', () => {
+      const resultado = calcularOrcamento({
+        itens: [livro('Hello Baby!', 8), livro('Tiny People', 10), livro('Little Explorers', 100)],
+        freteBruto: 80,
+        regras: regrasBase(),
+        produtos: produtosBase,
+      });
+
+      expect(resultado.itensGratis).toContainEqual({
+        nome: "Teacher's Guide",
+        quantidade: 3,
+        precoUnitario: 139.9,
+        regraId: 'r-tg-brinde',
+      });
+    });
+
+    it('Hello Baby 8 + Tiny People 10 + Little Explorers 7 (25 livros, 3 títulos): floor(25/10)=2, min(2,3)=2 TGs', () => {
+      const resultado = calcularOrcamento({
+        itens: [livro('Hello Baby!', 8), livro('Tiny People', 10), livro('Little Explorers', 7)],
+        freteBruto: 80,
+        regras: regrasBase(),
+        produtos: produtosBase,
+      });
+
+      expect(resultado.itensGratis).toContainEqual({
+        nome: "Teacher's Guide",
+        quantidade: 2,
+        precoUnitario: 139.9,
+        regraId: 'r-tg-brinde',
+      });
+    });
+
+    it('pedido real da Escola Paradiso: My Baby Book 32 + Hello Baby 48 + Tiny People 48 + Little Explorers 48 (176 livros, 3 títulos elegíveis) → 3 TGs, não 17', () => {
+      const resultado = calcularOrcamento({
+        itens: [
+          livro('My Baby Book', 32, 114.9),
+          livro('Hello Baby!', 48),
+          livro('Tiny People', 48),
+          livro('Little Explorers', 48),
+        ],
+        freteBruto: 80,
+        regras: regrasBase(),
+        produtos: produtosBase,
+      });
+
+      // floor(176/10) = 17, mas só 3 títulos elegíveis (My Baby Book não conta,
+      // não tem Teacher's Guide) → min(17, 3) = 3
+      expect(resultado.itensGratis).toContainEqual({
+        nome: "Teacher's Guide",
+        quantidade: 3,
+        precoUnitario: 139.9,
+        regraId: 'r-tg-brinde',
+      });
+
+      const tgBrinde = resultado.regrasAplicadas.find((r) => r.regra_id === 'r-tg-brinde')!;
+      expect(tgBrinde.valor_economizado).toBeCloseTo(419.7, 2); // 3x Teacher's Guide a R$139,90
+    });
   });
 
   it('regra inativa nunca dispara', () => {

@@ -2,6 +2,10 @@ import type { ItemOrcamento, Produto, Regra, RegraAplicada } from '../types';
 
 const CATEGORIAS_LIVRO = new Set(['infantil', 'tots']);
 
+// My Baby Book não tem Teacher's Guide próprio (ver seção 2 do
+// PROJETO-ORCAMENTO.md) — não conta como "título elegível" pro brinde de TG.
+const TITULO_SEM_TEACHERS_GUIDE = 'My Baby Book';
+
 export interface ContextoCalculo {
   itens: ItemOrcamento[];
   freteBruto: number;
@@ -40,6 +44,20 @@ export function contarLivros(itens: ItemOrcamento[]): number {
   return itens
     .filter((item) => CATEGORIAS_LIVRO.has(item.categoria))
     .reduce((soma, item) => soma + item.quantidade, 0);
+}
+
+// Quantidade de Teacher's Guide de brinde = MÍNIMO entre (total de livros ÷
+// 10, arredondado pra baixo) e (número de títulos diferentes escolhidos no
+// pedido, excluindo My Baby Book). Sem esse teto por título, um pedido com
+// muita quantidade de poucos títulos (ex: 176 livros em só 3 títulos) gerava
+// TGs demais — um TG só faz sentido por título distinto no pedido.
+export function contarTitulosElegiveisParaTG(itens: ItemOrcamento[]): number {
+  const titulos = new Set(
+    itens
+      .filter((item) => CATEGORIAS_LIVRO.has(item.categoria) && item.nome !== TITULO_SEM_TEACHERS_GUIDE)
+      .map((item) => item.nome),
+  );
+  return titulos.size;
 }
 
 export function calcularSubtotal(itens: ItemOrcamento[]): number {
@@ -219,7 +237,12 @@ export function calcularOrcamento(ctx: ContextoCalculo): ResultadoCalculo {
         valor_economizado: economizado,
       });
     } else if (regra.tipo_beneficio === 'item_gratis') {
-      const quantidade = regra.gatilho_modo === 'a_cada' ? regra.beneficio_valor * vezes : regra.beneficio_valor;
+      let quantidade = regra.gatilho_modo === 'a_cada' ? regra.beneficio_valor * vezes : regra.beneficio_valor;
+      // Teto adicional só pro brinde de Teacher's Guide: nunca mais TGs do que
+      // títulos diferentes no pedido (ver contarTitulosElegiveisParaTG acima).
+      if (regra.item_beneficio === "Teacher's Guide") {
+        quantidade = Math.min(quantidade, contarTitulosElegiveisParaTG(ctx.itens));
+      }
       const precoUnitario = regra.item_beneficio ? (precosBeneficio.get(regra.item_beneficio) ?? 0) : 0;
       // O total só desconta o que está de fato no carrinho (ex: cliente já
       // comprou 2 Teacher's Guide e ganhou 1 de brinde → desconta 1). Se o
