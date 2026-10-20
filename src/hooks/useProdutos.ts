@@ -14,6 +14,7 @@ export function useProdutos() {
       .from('produtos')
       .select('*')
       .eq('ativo', true)
+      .eq('empresa', 'pf')
       .then(({ data, error }) => {
         if (cancelado) return;
         if (error) {
