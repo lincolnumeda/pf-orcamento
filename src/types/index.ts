@@ -120,3 +120,81 @@ export interface Orcamento {
   criado_em: string;
   atualizado_em: string;
 }
+
+// ===== Programa "Indique uma escola" (scripts/sql/criar-indicacoes.sql) =====
+
+export type StatusIndicacao =
+  | 'recebida'
+  | 'aceita'
+  | 'recusada_cliente'
+  | 'recusada_duplicada'
+  | 'em_negociacao'
+  | 'fechou'
+  | 'nao_fechou'
+  | 'paga';
+
+export interface Indicacao {
+  id: string;
+  escola_nome: string;
+  escola_cidade: string;
+  escola_uf: string;
+  escola_responsavel: string;
+  escola_cargo: string | null;
+  escola_whatsapp: string;
+  escola_email: string | null;
+  indicador_nome: string;
+  indicador_whatsapp: string;
+  indicador_email: string;
+  indicador_cpf: string;
+  indicador_relacao: string;
+  origem: string;
+  escola_chave: string;
+  possivel_duplicada: boolean;
+  status: StatusIndicacao;
+  valida_ate: string;
+  orcamento_id: string | null;
+  qtd_livros: number | null;
+  valor_livros: number | null;
+  comissao: number | null;
+  fechado_em: string | null;
+  pago_em: string | null;
+  notas_internas: string | null;
+  whatsapp_recebida_disparado_em: string | null;
+  whatsapp_recebida_enviado_em: string | null;
+  whatsapp_aceita_enviado_em: string | null;
+  whatsapp_recusada_cliente_enviado_em: string | null;
+  whatsapp_recusada_duplicada_enviado_em: string | null;
+  whatsapp_fechou_enviado_em: string | null;
+  whatsapp_paga_enviado_em: string | null;
+  criado_em: string;
+  atualizado_em: string;
+}
+
+// O que o formulário público envia (o resto o trigger preenche).
+export type NovaIndicacao = Pick<
+  Indicacao,
+  | 'escola_nome'
+  | 'escola_cidade'
+  | 'escola_uf'
+  | 'escola_responsavel'
+  | 'escola_cargo'
+  | 'escola_whatsapp'
+  | 'escola_email'
+  | 'indicador_nome'
+  | 'indicador_whatsapp'
+  | 'indicador_email'
+  | 'indicador_cpf'
+  | 'indicador_relacao'
+  | 'origem'
+>;
+
+export type TipoHistoricoIndicacao = 'nota' | 'whatsapp_enviado' | 'status_alterado';
+
+export interface HistoricoIndicacao {
+  id: string;
+  indicacao_id: string;
+  tipo: TipoHistoricoIndicacao;
+  conteudo: string;
+  autor: string | null;
+  criado_em: string;
+}

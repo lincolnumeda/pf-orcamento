@@ -15,8 +15,11 @@ export function Topbar() {
         </div>
 
         <nav className="topbar__abas">
-          <NavLink to="/central" className={({ isActive }) => `tab ${isActive ? 'tab--ativa' : ''}`}>
+          <NavLink to="/central" end className={({ isActive }) => `tab ${isActive ? 'tab--ativa' : ''}`}>
             Central
+          </NavLink>
+          <NavLink to="/central/indicacoes" className={({ isActive }) => `tab ${isActive ? 'tab--ativa' : ''}`}>
+            Indicações
           </NavLink>
           <NavLink to="/admin/regras" className={({ isActive }) => `tab ${isActive ? 'tab--ativa' : ''}`}>
             Regras

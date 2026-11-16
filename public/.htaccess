@@ -1,7 +1,12 @@
 # SPA fallback: qualquer rota que não seja um arquivo/pasta real (ex:
-# /central, /aprovar/abc-123) cai no index.html, que o React Router então
-# resolve no cliente. Sem isso, acessar essas URLs direto (sem passar pela
-# navegação interna) dá 404 no Apache.
+# /central, /aprovar/abc-123, /indique, /indique/regulamento) cai no
+# index.html, que o React Router então resolve no cliente. Sem isso, acessar
+# essas URLs direto (sem passar pela navegação interna) dá 404 no Apache.
+#
+# ⚠️ Nunca crie em public/ uma PASTA com o nome de uma rota (ex.:
+# public/indique/): aí "/indique" vira diretório real, a regra !-d abaixo
+# deixa de valer e o Apache responde 403/listagem em vez do app. Por isso o
+# logo do programa de indicação fica em public/marca/.
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /

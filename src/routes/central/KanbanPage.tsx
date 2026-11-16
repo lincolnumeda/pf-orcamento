@@ -1,9 +1,11 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useOrcamentos } from '../../hooks/useOrcamentos';
 import { useAuth } from '../../hooks/useAuth';
 import { KanbanColuna } from '../../components/central/KanbanColuna';
 import { OrcamentoDetalhe } from '../../components/central/OrcamentoDetalhe';
-import type { Orcamento, StatusOrcamento } from '../../types';
+import type { Indicacao, Orcamento, StatusOrcamento } from '../../types';
+import { listarIndicacoes } from '../../lib/indicacoes';
+import { indicacaoDoOrcamento } from '../../lib/indicacaoVinculo';
 
 const COLUNAS: { status: StatusOrcamento; titulo: string }[] = [
   { status: 'recebido', titulo: 'Recebido' },
@@ -19,6 +21,25 @@ export default function KanbanPage() {
   const autorNome = auth.status === 'autorizado' ? auth.usuario.nome || auth.usuario.email : '';
   const [busca, setBusca] = useState('');
   const [selecionado, setSelecionado] = useState<Orcamento | null>(null);
+  const [indicacoes, setIndicacoes] = useState<Indicacao[]>([]);
+
+  // Programa de indicação: só pra mostrar o selo "Indicada por" — se falhar
+  // (ex.: tabela ainda não criada), a Central segue igual, sem selo.
+  useEffect(() => {
+    listarIndicacoes()
+      .then(setIndicacoes)
+      .catch(() => setIndicacoes([]));
+  }, []);
+
+  const indicacaoPorOrcamento = useMemo(() => {
+    const mapa = new Map<string, Indicacao>();
+    if (indicacoes.length === 0) return mapa;
+    for (const o of orcamentos) {
+      const indicacao = indicacaoDoOrcamento(o, indicacoes);
+      if (indicacao) mapa.set(o.id, indicacao);
+    }
+    return mapa;
+  }, [orcamentos, indicacoes]);
 
   const filtrados = useMemo(() => {
     const termo = busca.trim().toLowerCase();
@@ -56,6 +77,7 @@ export default function KanbanPage() {
             titulo={coluna.titulo}
             orcamentos={filtrados.filter((o) => o.status === coluna.status)}
             onSelecionar={setSelecionado}
+            indicacaoPorOrcamento={indicacaoPorOrcamento}
           />
         ))}
       </div>
@@ -64,6 +86,7 @@ export default function KanbanPage() {
         <OrcamentoDetalhe
           orcamento={selecionado}
           autorNome={autorNome}
+          indicacao={indicacaoPorOrcamento.get(selecionado.id) ?? null}
           onFechar={() => setSelecionado(null)}
           onAtualizado={handleAtualizado}
         />

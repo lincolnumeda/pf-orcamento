@@ -145,3 +145,70 @@ Já cadastrado:
 ## 9. Protótipo de referência visual
 
 Já existe um mockup HTML funcional (não conectado a dados reais) demonstrando a experiência esperada — tanto da tela de regras quanto da tela do cliente com cálculo ao vivo. Serve como referência de UX/visual, não como código de produção.
+
+## 10. Programa "Indique uma escola"
+
+Programa de indicação dos Class Books: qualquer pessoa indica uma escola **nova** (que nunca comprou da Pequenos Fluentes). Se a escola fechar pedido de **mais de 10 Class Books (11+)**, quem indicou ganha **10% do valor líquido pago pelos Class Books** (sem Teacher's Guide, assinatura ou frete), por PIX. A escola não ganha desconto. Indicações até **31/12/2026** (pode ser prorrogado em `DATA_FIM_INDICACOES`); cada uma vale **30 dias**; se duas pessoas indicam a mesma escola, vale a primeira registrada.
+
+Referências originais de texto e visual: `docs/indique/index.html` e `docs/indique/regulamento.html`.
+
+### Onde está cada coisa
+
+| O quê | Onde |
+|---|---|
+| Prazo final, validade (30 dias), 10%, mínimo de 11 livros | `src/lib/indicacaoConfig.ts` |
+| Textos das 6 mensagens de WhatsApp (arquivo único) | `supabase/functions/_shared/mensagensIndicacao.ts` |
+| Página pública `/indique` e `/indique/regulamento` | `src/routes/publico/indique/` + `src/styles/indique.css` |
+| Aba "Indicações" na Central (`/central/indicacoes`) | `src/routes/central/IndicacoesPage.tsx`, `src/components/indicacoes/` |
+| Normalização da chave da escola (TS) | `src/lib/indicacaoChave.ts` |
+| Cálculo de quantidade/valor/comissão a partir do orçamento | `src/lib/indicacaoComissao.ts` |
+| Selo "Indicada por" no Kanban | `src/lib/indicacaoVinculo.ts` |
+| Validação de CPF/WhatsApp | `src/lib/cpf.ts` |
+| Envio de WhatsApp (automático e manual) | `supabase/functions/enviar-whatsapp-indicacao/` |
+| Banco | `scripts/sql/criar-indicacoes.sql`, `scripts/sql/agendar-whatsapp-indicacao.sql` |
+
+⚠️ Três coisas estão duplicadas de propósito e precisam andar juntas:
+- **Normalização da chave**: `orcamento.normalizar_texto_escola()` (SQL) ↔ `normalizarTextoEscola()` (TS).
+- **30 dias**: trigger do SQL ↔ `VALIDADE_DIAS` ↔ texto da mensagem "aceita".
+- **Prazo final**: `DATA_FIM_INDICACOES` (vale pra página, regulamento e "Programa encerrado").
+
+### Banco (`schema orcamento`)
+
+**`orcamento.indicacoes`**: dados da escola (`escola_*`), de quem indicou (`indicador_*`, `origem` = `utm_source`) e de controle:
+- `escola_chave` = nome + "|" + cidade normalizados (minúsculas, sem acento, sem pontuação, sem "escola/colégio/ltda"). Calculada pelo trigger.
+- `possivel_duplicada`: o trigger marca se já existe outra indicação com a mesma chave (a primeira não muda).
+- `valida_ate` = `criado_em` + 30 dias (trigger).
+- `status`: `recebida` → `aceita` | `recusada_cliente` | `recusada_duplicada` → `em_negociacao` → `fechou` | `nao_fechou` → `paga`.
+- `orcamento_id`, `qtd_livros`, `valor_livros`, `comissao`, `fechado_em`, `pago_em`, `notas_internas`.
+- `whatsapp_<tipo>_enviado_em` (uma por mensagem) + `whatsapp_recebida_disparado_em` (cron já tentou): cada mensagem sai no máximo uma vez.
+
+O INSERT é público (anon), mas o trigger força `status = recebida` e zera todos os campos de controle, então ninguém cria uma indicação já aceita ou com comissão. Leitura e edição só autenticado; sem DELETE.
+
+**`orcamento.indicacoes_historico`**: log imutável (WhatsApp enviado, mudança de status, ajuste de fechamento), mesmo modelo de `interacoes`.
+
+### WhatsApp
+
+Edge Function nova `enviar-whatsapp-indicacao` (a `enviar-whatsapp` dos orçamentos não foi tocada). Reaproveita `enviar-whatsapp/whatsgw.ts` e o relay PHP `public/api/enviar-whatsapp-relay.php`, com os mesmos secrets.
+- **Automático "recebida"**: pg_cron a cada minuto pega indicações com mais de 2 minutos ainda não disparadas (janela de 1 dia) e chama a function com a service_role.
+- **Manual (Central)**: um botão por mensagem, sempre com prévia editável. A function só aceita usuário logado ou service_role (não basta a anon key).
+- A function reserva a coluna `whatsapp_<tipo>_enviado_em` de forma atômica antes de enviar (duplo clique ou cron + manual não duplicam) e a libera se o envio falhar.
+- Todo envio entra no histórico da indicação.
+
+### Comissão: sempre do snapshot do orçamento
+
+Os preços mudam depois de 30/11. A comissão **nunca** usa `orcamento.produtos`. Ao marcar "fechou", a Central vincula o orçamento e calcula a partir de `orcamento.itens` (preço congelado) e `regras_aplicadas`:
+1. Soma quantidade × preço só dos itens `infantil` e `tots` (Class Books).
+2. Aplica o mesmo percentual das regras `desconto_total_pct`.
+3. Desconta brinde (`item_gratis`) que seja um Class Book já no carrinho. Brinde de TG/assinatura não mexe.
+4. Rateia `ajuste_manual` **negativo** na proporção que os livros representam nos produtos. Acréscimo (positivo) não aumenta a base.
+5. Comissão = 10%, arredondada em centavos.
+
+Os valores ficam editáveis. A Central avisa (sem bloquear) se o pedido tem 10 livros ou menos, se o fechamento passou do `valida_ate` ou se o orçamento é anterior à indicação.
+
+### Ligação com o orçamento (só visual)
+
+No Kanban, um orçamento ganha o selo "💜 Indicada por {nome}" (e um atalho para a indicação no detalhe) quando há indicação `aceita`/`em_negociacao` com o mesmo nome normalizado, e o orçamento chegou entre o registro da indicação e o `valida_ate`. Como `orcamentos` não tem cidade (só CEP), a comparação usa só a parte do nome da `escola_chave`.
+
+### Conferência "a escola é nova?"
+
+A Central mostra outras indicações com a mesma chave e orçamentos com nome parecido (mesma normalização, com tolerância: um nome contém o outro ou metade das palavras em comum). A conferência no WooCommerce e na planilha de lotes continua manual.

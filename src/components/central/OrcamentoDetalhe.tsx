@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import type { Interacao, Orcamento, StatusOrcamento } from '../../types';
+import { Link } from 'react-router-dom';
+import type { Indicacao, Interacao, Orcamento, StatusOrcamento } from '../../types';
 import { formatarReais } from '../../lib/formato';
 import { atualizarAjusteManual, atualizarStatus, linkWhatsApp, totalComAjuste } from '../../lib/orcamentos';
 import { listarInteracoes, criarInteracao } from '../../lib/interacoes';
@@ -18,11 +19,13 @@ const STATUS_OPCOES: { valor: StatusOrcamento; rotulo: string }[] = [
 interface Props {
   orcamento: Orcamento;
   autorNome: string;
+  // Programa de indicação (só visual): indicação aceita que bate com a escola.
+  indicacao?: Indicacao | null;
   onFechar: () => void;
   onAtualizado: (orcamento: Orcamento) => void;
 }
 
-export function OrcamentoDetalhe({ orcamento, autorNome, onFechar, onAtualizado }: Props) {
+export function OrcamentoDetalhe({ orcamento, autorNome, indicacao, onFechar, onAtualizado }: Props) {
   const [interacoes, setInteracoes] = useState<Interacao[]>([]);
   const [carregandoInteracoes, setCarregandoInteracoes] = useState(true);
   const [novaNota, setNovaNota] = useState('');
@@ -129,6 +132,13 @@ export function OrcamentoDetalhe({ orcamento, autorNome, onFechar, onAtualizado 
             Fechar
           </button>
         </div>
+
+        {indicacao && (
+          <p className="orcamento-detalhe__indicada">
+            💜 Indicada por {indicacao.indicador_nome}{' '}
+            <Link to={`/central/indicacoes?id=${indicacao.id}`}>Ver indicação →</Link>
+          </p>
+        )}
 
         <div className="orcamento-detalhe__acoes-topo">
           <a

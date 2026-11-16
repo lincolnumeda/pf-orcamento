@@ -2,7 +2,15 @@ import type { Orcamento } from '../../types';
 import { formatarReais } from '../../lib/formato';
 import { totalComAjuste } from '../../lib/orcamentos';
 
-export function OrcamentoCard({ orcamento, onClick }: { orcamento: Orcamento; onClick: () => void }) {
+export function OrcamentoCard({
+  orcamento,
+  onClick,
+  indicadaPor,
+}: {
+  orcamento: Orcamento;
+  onClick: () => void;
+  indicadaPor?: string;
+}) {
   const total = totalComAjuste(orcamento);
   const ajustado = orcamento.ajuste_manual !== 0;
 
@@ -14,6 +22,7 @@ export function OrcamentoCard({ orcamento, onClick }: { orcamento: Orcamento; on
     >
       <span className="orcamento-card__escola">{orcamento.escola_nome}</span>
       <span className="orcamento-card__responsavel">{orcamento.responsavel_nome}</span>
+      {indicadaPor && <span className="orcamento-card__indicada">💜 Indicada por {indicadaPor}</span>}
       <span className="orcamento-card__total">
         {formatarReais(total)}
         {ajustado && <span className="orcamento-card__ajustado"> (ajustado)</span>}

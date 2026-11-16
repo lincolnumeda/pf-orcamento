@@ -4,6 +4,9 @@ import AprovarPage from './routes/publico/AprovarPage';
 import LoginPage from './routes/login/LoginPage';
 import RegrasPage from './routes/admin/RegrasPage';
 import KanbanPage from './routes/central/KanbanPage';
+import IndicacoesPage from './routes/central/IndicacoesPage';
+import IndiquePage from './routes/publico/indique/IndiquePage';
+import RegulamentoIndiquePage from './routes/publico/indique/RegulamentoIndiquePage';
 import { RequireAuth } from './components/auth/RequireAuth';
 
 export default function App() {
@@ -12,6 +15,8 @@ export default function App() {
       <Routes>
         <Route path="/" element={<OrcamentoPage />} />
         <Route path="/aprovar/:id" element={<AprovarPage />} />
+        <Route path="/indique" element={<IndiquePage />} />
+        <Route path="/indique/regulamento" element={<RegulamentoIndiquePage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route
           path="/admin/regras"
@@ -26,6 +31,14 @@ export default function App() {
           element={
             <RequireAuth>
               <KanbanPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/central/indicacoes"
+          element={
+            <RequireAuth>
+              <IndicacoesPage />
             </RequireAuth>
           }
         />
