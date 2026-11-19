@@ -1,14 +1,15 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { corsHeaders } from '../_shared/cors.ts';
-import { montarPedidoWoo, montarLinkPagamento, type ItemPedido } from './woocommerce.ts';
+import { montarLinkCarrinhoAssinado, montarUrlCarrinho, type DadosPedido, type ItemPedido } from './woocommerce.ts';
 
 const WOOCOMMERCE_URL = Deno.env.get('WOOCOMMERCE_URL')!;
-const WOOCOMMERCE_CONSUMER_KEY = Deno.env.get('WOOCOMMERCE_CONSUMER_KEY')!;
-const WOOCOMMERCE_CONSUMER_SECRET = Deno.env.get('WOOCOMMERCE_CONSUMER_SECRET')!;
-// Slug real da página de Checkout do site — não é "checkout" em inglês nesse
-// site, é "finalizar-compra" (conferido em wp-json/wp/v2/pages). Se a página
-// mudar de slug um dia, só trocar esse secret, sem precisar redeployar.
-const WOOCOMMERCE_CHECKOUT_PATH = Deno.env.get('WOOCOMMERCE_CHECKOUT_PATH') ?? 'checkout';
+// Segredo dedicado só pra assinar/conferir o link de carrinho — não é o
+// mesmo WOOCOMMERCE_CONSUMER_KEY/SECRET (aquele é credencial da API REST;
+// este é um HMAC verificado pelo snippet PHP no WordPress, propósito
+// diferente, rotação independente). Precisa estar definido IDENTICAMENTE
+// como constante PHP no wp-config.php (ou snippet "PHP Constants" no
+// WPCode) com o nome PF_ORCAMENTO_LINK_SECRET.
+const PF_ORCAMENTO_LINK_SECRET = Deno.env.get('PF_ORCAMENTO_LINK_SECRET')!;
 
 function jsonResponse(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -49,8 +50,8 @@ Deno.serve(async (req) => {
     }
 
     if (acao === 'confirmar') {
-      // Idempotente: se já tem link de pagamento, não cria pedido de novo —
-      // só devolve o mesmo link (evita pedido duplicado em clique repetido).
+      // Idempotente: se já tem link, não monta de novo — só devolve o mesmo
+      // (evita assinar duas vezes, com exp diferente, em clique repetido).
       if (orcamento.link_pagamento) {
         return jsonResponse({ link_pagamento: orcamento.link_pagamento });
       }
@@ -71,42 +72,27 @@ Deno.serve(async (req) => {
           .map((p) => [p.id, p.woocommerce_id]),
       );
 
-      const payload = montarPedidoWoo(
-        {
-          itens,
-          freteFinal: orcamento.frete_final,
-          ajusteManual: orcamento.ajuste_manual,
-          responsavelNome: orcamento.responsavel_nome,
-          responsavelEmail: orcamento.responsavel_email,
-          responsavelWhatsapp: orcamento.responsavel_whatsapp,
-          cep: orcamento.cep,
-        },
-        mapaWooId,
-      );
+      const dados: DadosPedido = {
+        itens,
+        freteFinal: orcamento.frete_final,
+        ajusteManual: orcamento.ajuste_manual,
+      };
 
-      const auth = btoa(`${WOOCOMMERCE_CONSUMER_KEY}:${WOOCOMMERCE_CONSUMER_SECRET}`);
-      const respostaWoo = await fetch(`${WOOCOMMERCE_URL}/wp-json/wc/v3/orders`, {
-        method: 'POST',
-        headers: { Authorization: `Basic ${auth}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-
-      if (!respostaWoo.ok) {
-        const texto = await respostaWoo.text();
-        throw new Error(`WooCommerce respondeu ${respostaWoo.status}: ${texto}`);
-      }
-
-      const pedido = await respostaWoo.json();
-      const linkPagamento = montarLinkPagamento(WOOCOMMERCE_URL, WOOCOMMERCE_CHECKOUT_PATH, pedido.id, pedido.order_key);
+      // Não fazemos NENHUMA chamada de rede pro WooCommerce aqui — só
+      // matemática local (montar/assinar o link). O WooCommerce só precisa
+      // estar de pé quando o cliente efetivamente clicar no link, não no
+      // momento da confirmação.
+      const { itensUrl, exp, sig } = await montarLinkCarrinhoAssinado(orcamento_id, dados, mapaWooId, PF_ORCAMENTO_LINK_SECRET, new Date());
+      const linkCarrinho = montarUrlCarrinho(WOOCOMMERCE_URL, orcamento_id, itensUrl, dados.ajusteManual, dados.freteFinal, exp, sig);
 
       const { error: updateError } = await supabase
         .from('orcamentos')
-        .update({ status: 'aprovado', link_pagamento: linkPagamento, atualizado_em: new Date().toISOString() })
+        .update({ status: 'aprovado', link_pagamento: linkCarrinho, atualizado_em: new Date().toISOString() })
         .eq('id', orcamento_id);
 
       if (updateError) throw updateError;
 
-      return jsonResponse({ link_pagamento: linkPagamento });
+      return jsonResponse({ link_pagamento: linkCarrinho });
     }
 
     // Padrão (sem ação ou acao='consultar'): só devolve o estado atual, pra
