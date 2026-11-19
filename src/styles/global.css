@@ -1718,3 +1718,80 @@ fieldset legend {
 .indicacao-previa__acoes {
   flex-wrap: wrap;
 }
+
+/* ---------- Funil (Central) ---------- */
+.funil-periodos {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+  transition: opacity 0.15s;
+}
+
+.funil-periodos--carregando {
+  opacity: 0.55;
+}
+
+@media (min-width: 860px) {
+  .funil-periodos {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.funil-periodo__vazio {
+  color: var(--muted);
+  margin: 0;
+}
+
+.funil-etapas {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.funil-etapa__linha {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.funil-etapa__nome {
+  font-weight: 700;
+}
+
+.funil-etapa__valor {
+  font-size: var(--text-lg);
+  font-variant-numeric: tabular-nums;
+}
+
+.funil-etapa__barra {
+  height: 8px;
+  background: var(--color-primary-soft);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+  margin-top: 4px;
+}
+
+.funil-etapa__barra span {
+  display: block;
+  height: 100%;
+  background: var(--color-primary);
+  border-radius: var(--radius-pill);
+}
+
+.funil-etapa__taxa {
+  display: block;
+  margin-top: 3px;
+  font-size: var(--text-xs);
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.funil-page__nota {
+  margin-top: 16px;
+  font-size: var(--text-sm);
+  color: var(--muted);
+}

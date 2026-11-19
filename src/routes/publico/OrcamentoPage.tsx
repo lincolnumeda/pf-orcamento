@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useProdutos } from '../../hooks/useProdutos';
 import { useOrcamentoCalculo } from '../../hooks/useOrcamentoCalculo';
 import { ProdutoLinha } from '../../components/orcamento/ProdutoLinha';
@@ -6,6 +6,7 @@ import { ResumoOrcamento } from '../../components/orcamento/ResumoOrcamento';
 import { DadosContato, type DadosContatoValor } from '../../components/orcamento/DadosContato';
 import { orcamentoDb } from '../../lib/supabase';
 import { enviarEmailOrcamento } from '../../lib/email';
+import { registrarEvento } from '../../lib/funil';
 import type { CategoriaProduto } from '../../types';
 
 const CATEGORIAS_SELECIONAVEIS: CategoriaProduto[] = ['infantil', 'tots'];
@@ -38,6 +39,26 @@ export default function OrcamentoPage() {
   const [enviando, setEnviando] = useState(false);
   const [enviado, setEnviado] = useState(false);
   const [erroEnvio, setErroEnvio] = useState<string | null>(null);
+
+  // Funil de conversão (src/lib/funil.ts): cada evento sai no máximo 1x por
+  // aba, em segundo plano — não interfere em nada do formulário.
+  useEffect(() => {
+    registrarEvento('pagina_aberta');
+  }, []);
+
+  useEffect(() => {
+    if (totalLivros > 0) registrarEvento('livro_adicionado');
+  }, [totalLivros]);
+
+  const freteCotado = freteDias !== null && !freteCarregando && !freteErro;
+  useEffect(() => {
+    if (freteCotado) registrarEvento('frete_calculado');
+  }, [freteCotado]);
+
+  const contatoIniciado = Object.values(dadosContato).some((v) => v.trim() !== '');
+  useEffect(() => {
+    if (contatoIniciado) registrarEvento('contato_iniciado');
+  }, [contatoIniciado]);
 
   const produtosSelecionaveis = produtos.filter((p) => CATEGORIAS_SELECIONAVEIS.includes(p.categoria));
 
@@ -77,6 +98,8 @@ export default function OrcamentoPage() {
       setErroEnvio(error.message);
       return;
     }
+
+    registrarEvento('orcamento_enviado');
 
     try {
       await enviarEmailOrcamento({

@@ -21,6 +21,9 @@ export function Topbar() {
           <NavLink to="/central/indicacoes" className={({ isActive }) => `tab ${isActive ? 'tab--ativa' : ''}`}>
             Indicações
           </NavLink>
+          <NavLink to="/central/funil" className={({ isActive }) => `tab ${isActive ? 'tab--ativa' : ''}`}>
+            Funil
+          </NavLink>
           <NavLink to="/admin/regras" className={({ isActive }) => `tab ${isActive ? 'tab--ativa' : ''}`}>
             Regras
           </NavLink>

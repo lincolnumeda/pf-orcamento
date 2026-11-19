@@ -5,6 +5,7 @@ import LoginPage from './routes/login/LoginPage';
 import RegrasPage from './routes/admin/RegrasPage';
 import KanbanPage from './routes/central/KanbanPage';
 import IndicacoesPage from './routes/central/IndicacoesPage';
+import FunilPage from './routes/central/FunilPage';
 import IndiquePage from './routes/publico/indique/IndiquePage';
 import RegulamentoIndiquePage from './routes/publico/indique/RegulamentoIndiquePage';
 import { RequireAuth } from './components/auth/RequireAuth';
@@ -39,6 +40,14 @@ export default function App() {
           element={
             <RequireAuth>
               <IndicacoesPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/central/funil"
+          element={
+            <RequireAuth>
+              <FunilPage />
             </RequireAuth>
           }
         />
