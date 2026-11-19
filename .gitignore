@@ -6,4 +6,7 @@ dist
 .DS_Store
 *.tsbuildinfo
 .claude/
-wpcode/
+# wpcode/: só o snippet principal vai pro git (backup). Qualquer outro
+# arquivo ali — snippet de segredo/constantes, debug — fica fora.
+wpcode/*
+!wpcode/orcamento-carrinho-checkout.php
